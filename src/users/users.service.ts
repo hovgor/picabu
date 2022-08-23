@@ -43,6 +43,7 @@ export class UsersService {
       }
       return await this.usersRepository.findOne({ where: { email: email } });
     } catch (error) {
+      Logger.log('Email is not defined!!');
       throw error;
     }
   }

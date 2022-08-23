@@ -6,6 +6,7 @@ import { ConfigEnum } from './config.enum';
 import { ConfigService } from './config.service';
 import * as dotenv from 'dotenv';
 import { PostsEntityBase } from 'src/posts/entity/posts.entity';
+import { UploadFileEntityBase } from 'src/posts/upload_file/entity/upload_file.entity';
 dotenv.config();
 
 @Injectable()
@@ -33,7 +34,12 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
         this.configService.get(ConfigEnum.DATABASE_NAME) ||
         process.env.DATABASE_NAME,
       logging: false,
-      entities: [UsersEntityBase, AuthEntityBase, PostsEntityBase],
+      entities: [
+        UsersEntityBase,
+        AuthEntityBase,
+        PostsEntityBase,
+        UploadFileEntityBase,
+      ],
       // entities: [process.cwd(), 'entity/**/*.pg.entity.{js, ts}'],
       synchronize: true,
       migrationsRun: false,

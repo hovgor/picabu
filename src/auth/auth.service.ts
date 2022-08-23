@@ -3,6 +3,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -318,6 +319,21 @@ export class AuthService {
       };
     } catch (error) {
       Logger.log('error=> sign in user function error!!! ');
+      throw error;
+    }
+  }
+
+  // token verify
+  async verifyToken(data: string) {
+    try {
+      const token = await this.decodeToken(data);
+      if (!token) {
+        throw new UnauthorizedException('User is not authorized!!!');
+      }
+      const id: number = await this.afterDecode(data);
+      return id;
+    } catch (error) {
+      Logger.log('error=> token verify function ', error);
       throw error;
     }
   }

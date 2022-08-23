@@ -1,3 +1,4 @@
+import { PostsEntityBase } from 'src/posts/entity/posts.entity';
 import { UsersEntityBase } from 'src/users/entity/users.entity';
 import {
   BaseEntity,
@@ -5,44 +6,28 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UploadFileEntityBase } from '../upload_file/entity/upload_file.entity';
 
-@Entity({ schema: 'default', name: 'Posts' })
-export class PostsEntityBase extends BaseEntity {
+@Entity({ schema: 'default', name: 'Upload_file' })
+export class UploadFileEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ default: null, nullable: true })
-  title: string;
-
-  @Column({ default: null, nullable: true })
-  description: string;
-
-  @Column({ default: null, nullable: true })
-  attachment: string;
+  path: string;
 
   @Column({ default: null, nullable: true })
   like: number;
 
-  @ManyToOne(() => UsersEntityBase, (user) => user.authEntity, {
+  @ManyToOne(() => PostsEntityBase, (postEntity) => postEntity.attachment, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
   @Column({ name: 'user_id' })
-  userId: number;
-
-  @OneToMany(() => UploadFileEntityBase, (upload_file) => upload_file.postId, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinTable()
-  uploadFileEntity: UploadFileEntityBase[];
+  postId: number;
 
   @CreateDateColumn({
     name: 'created_date',
