@@ -29,6 +29,12 @@ export class UsersEntityBase extends BaseEntity {
   @Column({ default: null, nullable: true })
   nicname: string;
 
+  @Column({ default: 'local', nullable: false })
+  provider: string;
+
+  @Column({ default: null, nullable: true })
+  providerId: number;
+
   @Column({ name: 'device_id', default: null, nullable: true })
   deviceId: string;
 

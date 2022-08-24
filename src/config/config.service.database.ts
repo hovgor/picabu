@@ -10,7 +10,7 @@ dotenv.config();
 
 @Injectable()
 export class DatabaseConfigService implements TypeOrmOptionsFactory {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) { }
 
   public createTypeOrmOptions(): TypeOrmModuleOptions {
     return {
@@ -33,7 +33,7 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
         this.configService.get(ConfigEnum.DATABASE_NAME) ||
         process.env.DATABASE_NAME,
       logging: false,
-      entities: [UsersEntityBase, AuthEntityBase, PostsEntityBase],
+      entities: [UsersEntityBase, AuthEntityBase, PostsEntityBase,],
       // entities: [process.cwd(), 'entity/**/*.pg.entity.{js, ts}'],
       synchronize: true,
       migrationsRun: false,

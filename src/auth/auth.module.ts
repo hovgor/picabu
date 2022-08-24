@@ -12,6 +12,8 @@ import { jwtConstants } from './constants/jwt.constants';
 import { AuthEntityBase } from './entity/auth.entity';
 import { PasswordController } from './password/password.controller';
 import { PasswordService } from './password/password.service';
+import { ProvidersController } from './passwordLess/providers.controller';
+import { ProvidersService } from './passwordLess/providers.service';
 
 @Module({
   imports: [
@@ -23,8 +25,8 @@ import { PasswordService } from './password/password.service';
     }),
     TypeOrmModule.forFeature([AuthEntityBase, UsersEntityBase]),
   ],
-  controllers: [AuthController, PasswordController],
-  providers: [AuthService, UserValidator, HashPassword, PasswordService],
+  controllers: [AuthController, PasswordController, ProvidersController],
+  providers: [AuthService, UserValidator, HashPassword, PasswordService, ProvidersService],
   exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }

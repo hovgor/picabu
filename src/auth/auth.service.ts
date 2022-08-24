@@ -33,7 +33,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly userValidator: UserValidator,
     private readonly passwordHashing: HashPassword,
-  ) {}
+  ) { }
 
   // decode token
   async decodeToken(token: string) {
@@ -56,14 +56,13 @@ export class AuthService {
   }
 
   // create access token
-  async createAccessToken(user: UsersEntityBase, ip: string) {
+  async createAccessToken(user: UsersEntityBase) {
     try {
       const hashId = await this.hashIdUser(user.id);
       const payload: IJwtPayload = {
         email: user.email,
         sub: hashId,
         role: user.role,
-        ip: ip,
         deviceId: user.deviceId,
       };
 
@@ -80,14 +79,13 @@ export class AuthService {
   }
 
   // create refresh token
-  async createRefreshToken(user: UsersEntityBase | any, ip = '127.0.0.2') {
+  async createRefreshToken(user: UsersEntityBase | any) {
     try {
       const hashId = await this.hashIdUser(user.id);
       const payload: IJwtPayload = {
         email: user.email,
         sub: hashId,
         role: user.role,
-        ip: ip,
         deviceId: user.deviceId,
       };
 
@@ -202,8 +200,8 @@ export class AuthService {
           deviceId: data.deviceId,
         }),
       );
-      const accessToken = await this.createAccessToken(user, '');
-      const refreshToken = await this.createRefreshToken(user, '');
+      const accessToken = await this.createAccessToken(user);
+      const refreshToken = await this.createRefreshToken(user);
       if (!accessToken || !refreshToken) {
         Logger.log('tokens are undefined');
         throw new UnprocessableEntityException('tokens are undefined');

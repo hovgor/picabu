@@ -4,6 +4,5 @@ export interface IJwtPayload {
   email: string;
   role: UserRoles;
   sub: string;
-  ip: string;
   deviceId: string;
 }
