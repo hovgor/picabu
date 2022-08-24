@@ -328,10 +328,13 @@ export class AuthService {
     try {
       const token = await this.decodeToken(data);
       if (!token) {
+        Logger.log('User is not authorized!!!');
         throw new UnauthorizedException('User is not authorized!!!');
       }
       const id: number = await this.afterDecode(data);
-      return id;
+
+      const user = await this.usersRepository.findOne({ where: { id } });
+      return user;
     } catch (error) {
       Logger.log('error=> token verify function ', error);
       throw error;

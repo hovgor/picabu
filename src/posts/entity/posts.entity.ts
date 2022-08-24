@@ -11,6 +11,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { TagsEntityBase } from '../tegs/entity/tags.entity';
 import { UploadFileEntityBase } from '../upload_file/entity/upload_file.entity';
 
 @Entity({ schema: 'default', name: 'Posts' })
@@ -43,6 +44,13 @@ export class PostsEntityBase extends BaseEntity {
   })
   @JoinTable()
   uploadFileEntity: UploadFileEntityBase[];
+
+  @OneToMany(() => TagsEntityBase, (tag) => tag.postId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  tagsEntity: TagsEntityBase[];
 
   @CreateDateColumn({
     name: 'created_date',
