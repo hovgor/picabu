@@ -157,4 +157,22 @@ export class CategoriesForFavoriteService {
       throw error;
     }
   }
+
+  async getCategoriesById(id: number) {
+    try {
+      return await this.categorieForFavoritsRepository.findOne({
+        where: { id },
+      });
+    } catch (error) {
+      Logger.log('error => get categories by id function ', error);
+      throw error;
+    }
+  }
+
+  // async addFavoritePost(postId: number, categoriesId: number) {
+  //   try {
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 }

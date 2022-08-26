@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -8,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { UsersService } from 'src/modules/users/users.service';
 import { Repository } from 'typeorm';
+import { CategoriesForFavoriteService } from '../categories_for_favorite/categories_for_favorite.service';
 import { CreatePostBodyDto } from './dto/create.post.body.dto';
 import { PostsEntityBase } from './entity/posts.entity';
 import { TegsService } from './tegs/tegs.service';
@@ -22,6 +25,8 @@ export class PostsService {
     private readonly authService: AuthService,
     private readonly uploadFileService: UploadFileService,
     private readonly tagsService: TegsService,
+    @Inject(forwardRef(() => CategoriesForFavoriteService))
+    private readonly categoriesForFavoritesService: CategoriesForFavoriteService,
   ) {}
 
   // create post
@@ -100,6 +105,36 @@ export class PostsService {
       };
     } catch (error) {
       Logger.log('error=> get post function ', error);
+      throw error;
+    }
+  }
+
+  async addPostToFavorites(categoriesId: number, postId: number, request: any) {
+    try {
+      const user = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorization!!!');
+      }
+      const categories =
+        await this.categoriesForFavoritesService.getCategoriesById(
+          categoriesId,
+        );
+      if (!categories) {
+        throw new NotFoundException('Categories not exist!!!');
+      }
+      if (categories.user !== user.id) {
+        throw new NotFoundException('User does not have such category!!!');
+      }
+      const post = await this.postsRepository.findOne({
+        where: { id: postId },
+      });
+      if (!post) {
+        Logger.log('post is not defined');
+      }
+
+      // const favoritePost = await this.categoriesForFavoritesService
+    } catch (error) {
+      Logger.log('error=> add post to favorites function ', error);
       throw error;
     }
   }

@@ -1,4 +1,3 @@
-import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import {
   BaseEntity,
@@ -7,8 +6,6 @@ import {
   Entity,
   Index,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -21,14 +18,6 @@ export class CategorieForFavoritsEntityBase extends BaseEntity {
 
   @Column({ default: 'default', nullable: true })
   title: string;
-
-  @ManyToMany((type) => PostsEntityBase, {
-    onDelete: 'CASCADE',
-    nullable: true,
-    eager: true,
-  })
-  @JoinTable()
-  public post: PostsEntityBase[];
 
   @ManyToOne(
     () => UsersEntityBase,

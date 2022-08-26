@@ -48,7 +48,7 @@ export class UsersEntityBase extends BaseEntity {
     nullable: true,
   })
   @JoinTable()
-  postEntity: AuthEntityBase[];
+  postEntity: PostsEntityBase[];
 
   @OneToMany(
     () => CategorieForFavoritsEntityBase,
