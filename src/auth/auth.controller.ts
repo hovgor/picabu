@@ -8,11 +8,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { EmailVerifyDto } from 'src/users/dto/email.verify.dto';
+import { EmailVerifyDto } from 'src/modules/users/dto/email.verify.dto';
 
-import { UserSignInDto } from 'src/users/dto/user.signin.dto';
-import { UserSignUpDto } from 'src/users/dto/user.signup.dto';
-import { UsersService } from 'src/users/users.service';
+import { UserSignInDto } from 'src/modules/users/dto/user.signin.dto';
+import { UserSignUpDto } from 'src/modules/users/dto/user.signup.dto';
+import { UsersService } from 'src/modules/users/users.service';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -27,10 +27,7 @@ export class AuthController {
   async signUp(@Body() body: UserSignUpDto, @Res() res: Response) {
     try {
       const newUser = await this.authService.createNewUser(body);
-      return res.status(HttpStatus.CREATED).json({
-        success: true,
-        newUser,
-      });
+      return res.status(HttpStatus.CREATED).json(newUser);
     } catch (error) {
       throw error;
     }

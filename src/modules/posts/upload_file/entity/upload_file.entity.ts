@@ -1,5 +1,5 @@
-import { PostsEntityBase } from 'src/posts/entity/posts.entity';
-
+import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
+import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import {
   BaseEntity,
   Column,
@@ -11,15 +11,15 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ schema: 'default', name: 'Tags' })
-export class TagsEntityBase extends BaseEntity {
+@Entity({ schema: 'default', name: 'Upload_file' })
+export class UploadFileEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ default: null, nullable: true })
-  name: string;
+  path: string;
 
-  @ManyToOne(() => PostsEntityBase, (postEntity) => postEntity.tagsEntity, {
+  @ManyToOne(() => PostsEntityBase, (postEntity) => postEntity.attachment, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()

@@ -1,38 +1,46 @@
+import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ schema: 'default', name: 'Auth' })
-export class AuthEntityBase extends BaseEntity {
+@Entity({ schema: 'default', name: 'Categorie_For_Favorits' })
+export class CategorieForFavoritsEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // @Column({ name: 'device_id' })
-  // deviceId: string;
+  @Column({ default: 'default', nullable: true })
+  title: string;
 
-  @Column({ default: null, nullable: true, name: 'access_token' })
-  accessToken: string;
-
-  @Column({ default: null, nullable: true, name: 'refresh_token' })
-  refreshToken: string;
-
-  @Column({ default: null, nullable: true, name: 'device_id' })
-  deviceId: string;
-
-  @ManyToOne(() => UsersEntityBase, (user) => user.authEntity, {
+  @ManyToMany((type) => PostsEntityBase, {
     onDelete: 'CASCADE',
+    nullable: true,
+    eager: true,
   })
+  @JoinTable()
+  public post: PostsEntityBase[];
+
+  @ManyToOne(
+    () => UsersEntityBase,
+    (user) => user.categorieForFavoritesEntity,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn()
-  @Column({ name: 'user_id' })
-  userId: number;
+  @Index()
+  @Column()
+  user: number;
 
   @CreateDateColumn({
     name: 'created_date',

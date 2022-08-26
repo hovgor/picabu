@@ -53,7 +53,6 @@ export class PostsController {
       return res.status(HttpStatus.NO_CONTENT).json({
         data: null,
         error: false,
-        success: true,
       });
     } catch (error) {
       throw error;

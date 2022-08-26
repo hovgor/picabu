@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from 'src/modules/users/users.service';
 import { Repository } from 'typeorm';
 import { CreatePostBodyDto } from './dto/create.post.body.dto';
 import { PostsEntityBase } from './entity/posts.entity';
@@ -27,13 +27,12 @@ export class PostsService {
   // create post
   async createPost(data: CreatePostBodyDto, request: any) {
     try {
-      const token = (request.headers['authorization'] + '').split(' ')[1];
-      const verifyToken = await this.authService.verifyToken(token);
+      const user = await this.authService.verifyToken(request);
       const newPost = await this.postsRepository.save(
         this.postsRepository.create({
           title: data.title,
           description: data.description,
-          userId: verifyToken.id,
+          userId: user.id,
         }),
       );
       if (data.attachment) {
@@ -55,8 +54,7 @@ export class PostsService {
   // delete post
   async deletePost(id: number, request: any) {
     try {
-      const token = (request.headers['authorization'] + '').split(' ')[1];
-      const user = await this.authService.verifyToken(token);
+      const user = await this.authService.verifyToken(request);
       const post = await this.postsRepository.findOne({ where: { id } });
       if (!post) {
         Logger.log('Post not exist!!!');

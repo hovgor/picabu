@@ -1,4 +1,5 @@
-import { UsersEntityBase } from 'src/users/entity/users.entity';
+import { CategorieForFavoritsEntityBase } from 'src/modules/categories_for_favorite/entity/categorie.for.favorits.entity';
+import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import {
   BaseEntity,
   Column,
@@ -6,6 +7,7 @@ import {
   Entity,
   JoinColumn,
   JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -51,6 +53,14 @@ export class PostsEntityBase extends BaseEntity {
   })
   @JoinTable()
   tagsEntity: TagsEntityBase[];
+
+  @ManyToMany((type) => CategorieForFavoritsEntityBase, {
+    onDelete: 'CASCADE',
+    nullable: true,
+    eager: true,
+  })
+  @JoinTable()
+  public post: CategorieForFavoritsEntityBase[];
 
   @CreateDateColumn({
     name: 'created_date',

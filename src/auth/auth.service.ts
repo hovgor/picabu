@@ -12,15 +12,16 @@ import { client } from 'src/config/config.service.redis';
 import { HashPassword } from 'src/shared/password-hash/hash.password';
 import { UserRoles } from 'src/shared/types/roles';
 import { UserValidator } from 'src/shared/validators/user.validator';
-import { UserSignInDto } from 'src/users/dto/user.signin.dto';
-import { UserSignUpDto } from 'src/users/dto/user.signup.dto';
-import { UsersEntityBase } from 'src/users/entity/users.entity';
+import { UserSignInDto } from 'src/modules/users/dto/user.signin.dto';
+import { UserSignUpDto } from 'src/modules/users/dto/user.signup.dto';
+import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import * as securePin from 'secure-pin';
 import { Repository } from 'typeorm';
 import { jwtConstants } from './constants/jwt.constants';
 import { IJwtPayload } from './constants/jwt.payload.interface';
 import { TokenForDbDto } from './dto/token.for.db.dto';
 import { AuthEntityBase } from './entity/auth.entity';
+import { CategoriesForFavoriteService } from 'src/modules/categories_for_favorite/categories_for_favorite.service';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mailer = require('../shared/email/mail.sender');
 
@@ -34,6 +35,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly userValidator: UserValidator,
     private readonly passwordHashing: HashPassword,
+    private readonly categoriesForFavoriteService: CategoriesForFavoriteService,
   ) {}
 
   // decode token
@@ -214,10 +216,13 @@ export class AuthService {
         accessToken: accessToken,
         refreshToken: refreshToken,
       });
+      await this.categoriesForFavoriteService.createCategorieForFavoritWhitSignUp(
+        user.id,
+      );
       return {
         data: { accessToken, refreshToken, verifyEmail },
         error: false,
-        success: true,
+        message: `Tokens for user ${verifyEmail}.`,
       };
     } catch (error) {
       Logger.log('error: create user don`t work ', error);
@@ -246,11 +251,9 @@ export class AuthService {
       const sendEmail = mailer(message);
       if (sendEmail) {
         return {
-          // data: null,
-          // error: false,
+          data: null,
+          error: false,
           message: `email sent to mail ${email}`,
-          // success: true,
-          // pin: pin,
         };
       } else {
         return {
@@ -324,16 +327,20 @@ export class AuthService {
   }
 
   // token verify
-  async verifyToken(data: string) {
+  async verifyToken(request: any) {
     try {
-      const token = await this.decodeToken(data);
-      if (!token) {
+      const token = (request.headers['authorization'] + '').split(' ')[1];
+
+      const decToken = await this.decodeToken(token);
+
+      if (!decToken) {
         Logger.log('User is not authorized!!!');
         throw new UnauthorizedException('User is not authorized!!!');
       }
-      const id: number = await this.afterDecode(data);
+      const id: number = await this.afterDecode(token);
 
       const user = await this.usersRepository.findOne({ where: { id } });
+
       return user;
     } catch (error) {
       Logger.log('error=> token verify function ', error);
