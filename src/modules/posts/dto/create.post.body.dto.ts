@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreatePostBodyDto {
   @ApiProperty()
@@ -11,7 +11,9 @@ export class CreatePostBodyDto {
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional()
-  @IsString()
-  attachment?: string;
+  @ApiPropertyOptional({ default: null })
+  tags?: any[] = null;
+
+  @ApiPropertyOptional({ default: null })
+  attachment?: any[] = null;
 }

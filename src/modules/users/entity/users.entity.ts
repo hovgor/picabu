@@ -1,5 +1,7 @@
 import { AuthEntityBase } from 'src/auth/entity/auth.entity';
-import { PostsEntityBase } from 'src/posts/entity/posts.entity';
+import { CategorieForFavoritsEntityBase } from 'src/modules/categories_for_favorite/entity/categorie.for.favorits.entity';
+import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
+import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 import { UserRoles } from 'src/shared/types/roles';
 import {
   BaseEntity,
@@ -53,7 +55,25 @@ export class UsersEntityBase extends BaseEntity {
     nullable: true,
   })
   @JoinTable()
-  postEntity: AuthEntityBase[];
+  postEntity: PostsEntityBase[];
+
+  @OneToMany(
+    () => CategorieForFavoritsEntityBase,
+    (categorie) => categorie.user,
+    {
+      onDelete: 'CASCADE',
+      nullable: true,
+    },
+  )
+  @JoinTable()
+  categorieForFavoritesEntity: CategorieForFavoritsEntityBase[];
+
+  @OneToMany(() => GroupsEntityBase, (group) => group.user, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  groupeEntity: GroupsEntityBase[];
 
   @CreateDateColumn({
     name: 'created_date',

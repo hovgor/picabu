@@ -1,3 +1,4 @@
+import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import {
   BaseEntity,
@@ -10,29 +11,20 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ schema: 'default', name: 'Auth' })
-export class AuthEntityBase extends BaseEntity {
+@Entity({ schema: 'default', name: 'Upload_file' })
+export class UploadFileEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // @Column({ name: 'device_id' })
-  // deviceId: string;
+  @Column({ default: null, nullable: true })
+  path: string;
 
-  @Column({ default: null, nullable: true, name: 'access_token' })
-  accessToken: string;
-
-  @Column({ default: null, nullable: true, name: 'refresh_token' })
-  refreshToken: string;
-
-  @Column({ default: null, nullable: true, name: 'device_id' })
-  deviceId: string;
-
-  @ManyToOne(() => UsersEntityBase, (user) => user.authEntity, {
+  @ManyToOne(() => PostsEntityBase, (postEntity) => postEntity.attachment, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ name: 'user_id' })
-  userId: number;
+  @Column({ name: 'post_id' })
+  postId: number;
 
   @CreateDateColumn({
     name: 'created_date',

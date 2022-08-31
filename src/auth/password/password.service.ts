@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { client } from 'src/config/config.service.redis';
 import { HashPassword } from 'src/shared/password-hash/hash.password';
 import { UserValidator } from 'src/shared/validators/user.validator';
-import { UsersEntityBase } from 'src/users/entity/users.entity';
+import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import { Repository } from 'typeorm';
 import { AuthService } from '../auth.service';
 import * as securePin from 'secure-pin';
@@ -50,11 +50,9 @@ export class PasswordService {
       const sendEmail = mailer(message);
       if (sendEmail) {
         return {
-          // data: null,
-          // error: false,
+          data: null,
+          error: false,
           message: `email sent to mail ${email}`,
-          // success: true,
-          // pin: pin,
         };
       } else {
         return {
@@ -123,7 +121,6 @@ export class PasswordService {
         data: { pinVerify },
         error: false,
         message: null,
-        success: true,
       };
     } catch (error) {
       Logger.log('error=> forgot password function ', error);

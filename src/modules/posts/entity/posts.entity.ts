@@ -1,4 +1,5 @@
-import { UsersEntityBase } from 'src/users/entity/users.entity';
+import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
+import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import {
   BaseEntity,
   Column,
@@ -11,7 +12,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { TagsEntityBase } from '../tegs/entity/tags.entity';
 import { UploadFileEntityBase } from '../upload_file/entity/upload_file.entity';
+import { FavoritsEntityBase } from './favorite.post.entity';
 
 @Entity({ schema: 'default', name: 'Posts' })
 export class PostsEntityBase extends BaseEntity {
@@ -30,12 +33,19 @@ export class PostsEntityBase extends BaseEntity {
   @Column({ default: null, nullable: true })
   like: number;
 
-  @ManyToOne(() => UsersEntityBase, (user) => user.authEntity, {
+  @ManyToOne(() => UsersEntityBase, (user) => user.postEntity, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
   @Column({ name: 'user_id' })
   userId: number;
+
+  @ManyToOne(() => GroupsEntityBase, (group) => group.postsEntity, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  @Column({ name: 'group_id', nullable: true })
+  groupId: number;
 
   @OneToMany(() => UploadFileEntityBase, (upload_file) => upload_file.postId, {
     onDelete: 'CASCADE',
@@ -43,6 +53,20 @@ export class PostsEntityBase extends BaseEntity {
   })
   @JoinTable()
   uploadFileEntity: UploadFileEntityBase[];
+
+  @OneToMany(() => TagsEntityBase, (tag) => tag.postId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  tagsEntity: TagsEntityBase[];
+
+  @OneToMany(() => FavoritsEntityBase, (tag) => tag.postId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  favoritesEntity: FavoritsEntityBase[];
 
   @CreateDateColumn({
     name: 'created_date',

@@ -1,5 +1,6 @@
 import { AuthEntityBase } from 'src/auth/entity/auth.entity';
-import { PostsEntityBase } from 'src/posts/entity/posts.entity';
+import { PostsEntityBase } from '../../posts/entity/posts.entity';
+// import { PostsEntityBase } from 'src/posts/entity/posts.entity';
 import {
   BaseEntity,
   Column,

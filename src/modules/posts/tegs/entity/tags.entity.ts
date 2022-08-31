@@ -1,5 +1,6 @@
-import { PostsEntityBase } from 'src/posts/entity/posts.entity';
-import { UsersEntityBase } from 'src/users/entity/users.entity';
+import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
+import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
+
 import {
   BaseEntity,
   Column,
@@ -11,23 +12,27 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ schema: 'default', name: 'Upload_file' })
-export class UploadFileEntityBase extends BaseEntity {
+@Entity({ schema: 'default', name: 'Tags' })
+export class TagsEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ default: null, nullable: true })
-  path: string;
+  name: string;
 
-  @Column({ default: null, nullable: true })
-  like: number;
-
-  @ManyToOne(() => PostsEntityBase, (postEntity) => postEntity.attachment, {
+  @ManyToOne(() => PostsEntityBase, (postEntity) => postEntity.tagsEntity, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ name: 'user_id' })
+  @Column({ name: 'post_id', nullable: true })
   postId: number;
+
+  @ManyToOne(() => GroupsEntityBase, (groupEntity) => groupEntity.tagsEntity, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  @Column({ name: 'group_id', nullable: true })
+  groupId: number;
 
   @CreateDateColumn({
     name: 'created_date',
