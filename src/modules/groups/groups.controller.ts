@@ -42,5 +42,10 @@ export class GroupsController {
   async deleteGroup(
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
-  ) {}
+  ) {
+    try {
+    } catch (error) {
+      throw error;
+    }
+  }
 }
