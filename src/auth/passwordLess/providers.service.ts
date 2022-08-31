@@ -15,7 +15,7 @@ import { PasswordlessDto } from 'src/auth/dto/providers.dto';
 import { PasswordlessNameDto } from 'src/auth/dto/providers.params.dto';
 import { generateNickname } from '../../shared/utils/utils';
 
-import { UsersEntityBase } from 'src/users/entity/users.entity';
+import { UsersEntityBase } from '../../modules/users/entity/users.entity';
 import * as securePin from 'secure-pin';
 import { Repository } from 'typeorm';
 // import { jwtConstants } from './constants/jwt.constants';
