@@ -1,5 +1,5 @@
 export class generateNickname {
-    static generateNickname = () => {
-        return `user${Date.now()}`
-    }
+  static generateNickname = () => {
+    return `user${Date.now()}`;
+  };
 }

@@ -3,6 +3,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -22,6 +23,7 @@ import { TokenForDbDto } from './dto/token.for.db.dto';
 import { AuthEntityBase } from './entity/auth.entity';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mailer = require('../shared/email/mail.sender');
+// const mailer = require('../shared/email/mail.sender');
 
 @Injectable()
 export class AuthService {
@@ -33,7 +35,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly userValidator: UserValidator,
     private readonly passwordHashing: HashPassword,
-  ) { }
+  ) {}
 
   // decode token
   async decodeToken(token: string) {
@@ -293,8 +295,8 @@ export class AuthService {
           ' Password is wrong!!! \n Please write again!!!',
         );
       }
-      const accessToken = await this.createAccessToken(user, '');
-      const refreshToken = await this.createRefreshToken(user, '');
+      const accessToken = await this.createAccessToken(user);
+      const refreshToken = await this.createRefreshToken(user);
       if (!accessToken || !refreshToken) {
         Logger.log('tokens are undefined');
         throw new UnprocessableEntityException('tokens are undefined');
@@ -316,6 +318,21 @@ export class AuthService {
       };
     } catch (error) {
       Logger.log('error=> sign in user function error!!! ');
+      throw error;
+    }
+  }
+
+  // token verify
+  async verifyToken(data: string) {
+    try {
+      const token = await this.decodeToken(data);
+      if (!token) {
+        throw new UnauthorizedException('User is not authorized!!!');
+      }
+      const id: number = await this.afterDecode(data);
+      return id;
+    } catch (error) {
+      Logger.log('error=> token verify function ', error);
       throw error;
     }
   }

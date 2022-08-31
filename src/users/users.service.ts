@@ -7,12 +7,15 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersEntityBase } from './entity/users.entity';
+import { ReactionsEntityBase } from './entity/reactions.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UsersEntityBase)
     private usersRepository: Repository<UsersEntityBase>,
+    @InjectRepository(ReactionsEntityBase)
+    private postsRepository: Repository<ReactionsEntityBase>,
   ) {}
 
   // get user by Id
@@ -43,6 +46,7 @@ export class UsersService {
       }
       return await this.usersRepository.findOne({ where: { email: email } });
     } catch (error) {
+      Logger.log('Email is not defined!!');
       throw error;
     }
   }
@@ -61,6 +65,37 @@ export class UsersService {
         message: 'User has been deleted!',
         success: true,
       };
+    } catch (error) {
+      Logger.log('error=> delete user whit Id function!!', error);
+      throw error;
+    }
+  }
+
+  //react post
+  async reactPost(body) {
+    try {
+      const { userId, postId, reactionType } = body;
+      const ifReacted = await this.postsRepository.findOne({
+        where: { user_id: userId },
+      });
+      if (ifReacted !== null) {
+        if (ifReacted.reaction_type == reactionType) {
+          return {
+            data: null,
+            error: false,
+            message: 'Your reaction was already counted',
+          };
+        }
+      }
+      const data = { userId, postId, reactionType };
+      const reacted = await this.postsRepository.upsert(
+        { user_id: userId, post_id: postId, reaction_type: reactionType },
+        {
+          conflictPaths: ['user_id', 'post_id'],
+          skipUpdateIfNoValuesChanged: true,
+        },
+      );
+      if (!reacted) throw new Error('Reaction was not Counted');
     } catch (error) {
       Logger.log('error=> delete user whit Id function!!', error);
       throw error;

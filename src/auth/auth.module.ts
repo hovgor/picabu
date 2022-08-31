@@ -26,7 +26,13 @@ import { ProvidersService } from './passwordLess/providers.service';
     TypeOrmModule.forFeature([AuthEntityBase, UsersEntityBase]),
   ],
   controllers: [AuthController, PasswordController, ProvidersController],
-  providers: [AuthService, UserValidator, HashPassword, PasswordService, ProvidersService],
+  providers: [
+    AuthService,
+    UserValidator,
+    HashPassword,
+    PasswordService,
+    ProvidersService,
+  ],
   exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}
