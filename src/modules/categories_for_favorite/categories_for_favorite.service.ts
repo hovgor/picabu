@@ -10,7 +10,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { Repository } from 'typeorm';
+import { FavoritsEntityBase } from '../posts/entity/favorite.post.entity';
+import { PostsEntityBase } from '../posts/entity/posts.entity';
+import { UsersEntityBase } from '../users/entity/users.entity';
 import { CreateCategorieForFavoritesDto } from './dto/create.categorie.for.favorites.dto';
+import { DeletePostFromCategorieDto } from './dto/delete.post.from.categorie.dto';
 import { CategorieForFavoritsEntityBase } from './entity/categorie.for.favorits.entity';
 
 @Injectable()
@@ -18,6 +22,10 @@ export class CategoriesForFavoriteService {
   constructor(
     @InjectRepository(CategorieForFavoritsEntityBase)
     private categorieForFavoritsRepository: Repository<CategorieForFavoritsEntityBase>,
+    @InjectRepository(PostsEntityBase)
+    private postsRepository: Repository<PostsEntityBase>,
+    @InjectRepository(FavoritsEntityBase)
+    private favoritesRepository: Repository<FavoritsEntityBase>,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
   ) {}
@@ -169,10 +177,85 @@ export class CategoriesForFavoriteService {
     }
   }
 
-  // async addFavoritePost(postId: number, categoriesId: number) {
-  //   try {
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
+  async getCategories(id: number, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+
+      const categorieFavorite = await this.categorieForFavoritsRepository
+        .createQueryBuilder('categorie')
+        .leftJoinAndSelect('categorie.categoriesEntity', 'favoritesId')
+        .where('favoritesId.categoriesId = :id', { id })
+        .getMany();
+
+      if (categorieFavorite[0].user !== user.id) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+
+      const arr = [];
+
+      for (let i = 0; i < categorieFavorite[0].categoriesEntity.length; ++i) {
+        const post = await this.postsRepository
+          .createQueryBuilder('post')
+          .leftJoinAndSelect('post.uploadFileEntity', 'upload_fileId')
+          .leftJoinAndSelect('post.tagsEntity', 'tegsId')
+          .andWhere('upload_fileId.postId = :id', {
+            id: categorieFavorite[0].categoriesEntity[i].postId,
+          })
+          .andWhere('tegsId.postId = :id', {
+            id: categorieFavorite[0].categoriesEntity[i].postId,
+          })
+          .where('post.id = :id', { i })
+          .getOne();
+        arr.push(post);
+      }
+      return { data: arr, error: false, message: 'This is your categorie.' };
+    } catch (error) {
+      Logger.log('error=> get categories for favorites function ', error);
+      throw error;
+    }
+  }
+
+  async deletePostFromCategorie(
+    data: DeletePostFromCategorieDto,
+    request: any,
+  ) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const categorieFavorite = await this.categorieForFavoritsRepository
+        .createQueryBuilder('categorie')
+        .leftJoinAndSelect('categorie.categoriesEntity', 'favoritesId')
+        .where('favoritesId.categoriesId = :id', { id: data.categorieId })
+        .getOne();
+      if (categorieFavorite.user !== user.id) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      let id: number;
+      for (let i = 0; i < categorieFavorite.categoriesEntity.length; ++i) {
+        if (categorieFavorite.categoriesEntity[i].postId === data.postId) {
+          id = categorieFavorite.categoriesEntity[i].id;
+          break;
+        }
+      }
+      if (!id) {
+        throw new BadRequestException('Post is not defined!!!');
+      }
+
+      await this.favoritesRepository.delete(id);
+
+      return {
+        data: null,
+        error: false,
+        message: 'favorite post in categorie is deleted',
+      };
+    } catch (error) {
+      Logger.log('error=> delete post from categorie function ', error);
+      throw error;
+    }
+  }
 }

@@ -1,3 +1,4 @@
+import { FavoritsEntityBase } from 'src/modules/posts/entity/favorite.post.entity';
 import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import {
   BaseEntity,
@@ -6,7 +7,9 @@ import {
   Entity,
   Index,
   JoinColumn,
+  JoinTable,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -30,6 +33,13 @@ export class CategorieForFavoritsEntityBase extends BaseEntity {
   @Index()
   @Column()
   user: number;
+
+  @OneToMany(() => FavoritsEntityBase, (post) => post.categoriesId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  categoriesEntity: FavoritsEntityBase[];
 
   @CreateDateColumn({
     name: 'created_date',

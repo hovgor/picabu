@@ -14,23 +14,46 @@ export class TegsService {
   async addTags(data: AddTagsDto) {
     try {
       let id: TagsEntityBase;
-      if (data.name.length > 0) {
-        for (let i = 0; i < data.name.length; ++i) {
+
+      if (data.postId) {
+        if (data.name.length > 0) {
+          for (let i = 0; i < data.name.length; ++i) {
+            id = await this.tagsRepository.save(
+              this.tagsRepository.create({
+                postId: data.postId,
+                name: data.name[i],
+              }),
+            );
+          }
+        } else {
           id = await this.tagsRepository.save(
             this.tagsRepository.create({
               postId: data.postId,
-              name: data.name[i],
+              name: data.name[0],
             }),
           );
         }
-      } else {
-        id = await this.tagsRepository.save(
-          this.tagsRepository.create({
-            postId: data.postId,
-            name: data.name[0],
-          }),
-        );
       }
+      if (data.groupId) {
+        if (data.name.length > 0) {
+          for (let i = 0; i < data.name.length; ++i) {
+            id = await this.tagsRepository.save(
+              this.tagsRepository.create({
+                groupId: data.groupId,
+                name: data.name[i],
+              }),
+            );
+          }
+        } else {
+          id = await this.tagsRepository.save(
+            this.tagsRepository.create({
+              groupId: data.groupId,
+              name: data.name[0],
+            }),
+          );
+        }
+      }
+
       return id;
     } catch (error) {
       Logger.log('error=> add tags function ', error);

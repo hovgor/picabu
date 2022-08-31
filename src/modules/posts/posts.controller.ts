@@ -14,8 +14,8 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { AddToFAvoritesDto } from './dto/add.to.favorites.dto';
 import { CreatePostBodyDto } from './dto/create.post.body.dto';
-import { PostsEntityBase } from './entity/posts.entity';
 import { PostsService } from './posts.service';
 
 @Controller('posts')
@@ -49,7 +49,7 @@ export class PostsController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     try {
-      const deletePost = await this.postsService.deletePost(id, req);
+      await this.postsService.deletePost(id, req);
       return res.status(HttpStatus.NO_CONTENT).json({
         data: null,
         error: false,
@@ -66,6 +66,26 @@ export class PostsController {
       const post = await this.postsService.getPostById(id);
 
       return res.status(HttpStatus.OK).json(post);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @UsePipes(new ValidationPipe())
+  @ApiBearerAuth()
+  @Post('add-to-favorites')
+  async addPostToFavorites(
+    @Res() res: Response,
+    @Req() req,
+    @Body() body: AddToFAvoritesDto,
+  ) {
+    try {
+      const favorite = await this.postsService.addPostToFavorites(
+        body.categoriesId,
+        body.postId,
+        req,
+      );
+      return res.status(HttpStatus.ACCEPTED).json(favorite);
     } catch (error) {
       throw error;
     }

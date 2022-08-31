@@ -10,6 +10,7 @@ import { UploadFileEntityBase } from 'src/modules/posts/upload_file/entity/uploa
 import { TagsEntityBase } from 'src/modules/posts/tegs/entity/tags.entity';
 import { CategorieForFavoritsEntityBase } from 'src/modules/categories_for_favorite/entity/categorie.for.favorits.entity';
 import { FavoritsEntityBase } from 'src/modules/posts/entity/favorite.post.entity';
+import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
 dotenv.config();
 
 @Injectable()
@@ -45,6 +46,7 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
         TagsEntityBase,
         CategorieForFavoritsEntityBase,
         FavoritsEntityBase,
+        GroupsEntityBase,
       ],
       // entities: [process.cwd(), 'entity/**/*.pg.entity.{js, ts}'],
       synchronize: true,

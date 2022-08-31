@@ -1,3 +1,4 @@
+import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 
 import {
@@ -23,8 +24,15 @@ export class TagsEntityBase extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ name: 'post_id' })
+  @Column({ name: 'post_id', nullable: true })
   postId: number;
+
+  @ManyToOne(() => GroupsEntityBase, (groupEntity) => groupEntity.tagsEntity, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  @Column({ name: 'group_id', nullable: true })
+  groupId: number;
 
   @CreateDateColumn({
     name: 'created_date',

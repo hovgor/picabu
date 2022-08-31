@@ -93,4 +93,39 @@ export class CategoriesForFavoriteController {
       throw error;
     }
   }
+  @ApiBearerAuth()
+  @Get(':id')
+  async getCategories(
+    @Res() res: Response,
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      const categorieFavorite =
+        await this.categoriesForFavoriteService.getCategories(id, req);
+      return res.status(HttpStatus.OK).json(categorieFavorite);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Delete(':categorieId/:postId')
+  async deletePostfromCategorie(
+    @Res() res: Response,
+    @Req() req,
+    @Param('categorieId', ParseIntPipe) categorieId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+  ) {
+    try {
+      const categorieFavorite =
+        await this.categoriesForFavoriteService.deletePostFromCategorie(
+          { categorieId, postId },
+          req,
+        );
+      return res.status(HttpStatus.NO_CONTENT).json(categorieFavorite);
+    } catch (error) {
+      throw error;
+    }
+  }
 }

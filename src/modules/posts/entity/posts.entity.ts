@@ -1,3 +1,4 @@
+import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
 import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import {
   BaseEntity,
@@ -13,6 +14,7 @@ import {
 } from 'typeorm';
 import { TagsEntityBase } from '../tegs/entity/tags.entity';
 import { UploadFileEntityBase } from '../upload_file/entity/upload_file.entity';
+import { FavoritsEntityBase } from './favorite.post.entity';
 
 @Entity({ schema: 'default', name: 'Posts' })
 export class PostsEntityBase extends BaseEntity {
@@ -38,6 +40,13 @@ export class PostsEntityBase extends BaseEntity {
   @Column({ name: 'user_id' })
   userId: number;
 
+  @ManyToOne(() => GroupsEntityBase, (group) => group.postsEntity, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  @Column({ name: 'group_id', nullable: true })
+  groupId: number;
+
   @OneToMany(() => UploadFileEntityBase, (upload_file) => upload_file.postId, {
     onDelete: 'CASCADE',
     nullable: true,
@@ -51,6 +60,13 @@ export class PostsEntityBase extends BaseEntity {
   })
   @JoinTable()
   tagsEntity: TagsEntityBase[];
+
+  @OneToMany(() => FavoritsEntityBase, (tag) => tag.postId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  favoritesEntity: FavoritsEntityBase[];
 
   @CreateDateColumn({
     name: 'created_date',

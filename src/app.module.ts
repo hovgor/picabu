@@ -6,6 +6,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { CategoriesForFavoriteModule } from './modules/categories_for_favorite/categories_for_favorite.module';
+import { GroupsModule } from './modules/groups/groups.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { CategoriesForFavoriteModule } from './modules/categories_for_favorite/c
     AuthModule,
     PostsModule,
     CategoriesForFavoriteModule,
+    GroupsModule,
   ],
   providers: [DatabaseConfigService],
 })

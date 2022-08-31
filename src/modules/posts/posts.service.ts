@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -8,10 +9,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
-import { UsersService } from 'src/modules/users/users.service';
 import { Repository } from 'typeorm';
 import { CategoriesForFavoriteService } from '../categories_for_favorite/categories_for_favorite.service';
 import { CreatePostBodyDto } from './dto/create.post.body.dto';
+import { FavoritsEntityBase } from './entity/favorite.post.entity';
 import { PostsEntityBase } from './entity/posts.entity';
 import { TegsService } from './tegs/tegs.service';
 import { UploadFileService } from './upload_file/upload_file.service';
@@ -21,7 +22,9 @@ export class PostsService {
   constructor(
     @InjectRepository(PostsEntityBase)
     private postsRepository: Repository<PostsEntityBase>,
-    private readonly usersService: UsersService,
+    @InjectRepository(FavoritsEntityBase)
+    private favoritesRepository: Repository<FavoritsEntityBase>,
+    @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
     private readonly uploadFileService: UploadFileService,
     private readonly tagsService: TegsService,
@@ -33,21 +36,23 @@ export class PostsService {
   async createPost(data: CreatePostBodyDto, request: any) {
     try {
       const user = await this.authService.verifyToken(request);
-      const newPost = await this.postsRepository.save(
-        this.postsRepository.create({
-          title: data.title,
-          description: data.description,
-          userId: user.id,
-        }),
-      );
+      const newPost = this.postsRepository.create({
+        title: data.title,
+        description: data.description,
+        userId: user.id,
+      });
+
+      if (data.tags.length <= 5 && data.tags.length >= 3) {
+        await this.postsRepository.save(newPost);
+        await this.tagsService.addTags({ postId: newPost.id, name: data.tags });
+      } else {
+        throw new BadRequestException('Tags length is not defined!!!');
+      }
       if (data.attachment) {
         await this.uploadFileService.uploadFilePath({
           postId: newPost.id,
           path: data.attachment,
         });
-      }
-      if (data.tags) {
-        await this.tagsService.addTags({ postId: newPost.id, name: data.tags });
       }
       return newPost;
     } catch (error) {
@@ -115,6 +120,7 @@ export class PostsService {
       if (!user) {
         throw new UnauthorizedException('User not authorization!!!');
       }
+
       const categories =
         await this.categoriesForFavoritesService.getCategoriesById(
           categoriesId,
@@ -132,7 +138,19 @@ export class PostsService {
         Logger.log('post is not defined');
       }
 
-      // const favoritePost = await this.categoriesForFavoritesService
+      const favoritPost: FavoritsEntityBase =
+        await this.favoritesRepository.save(
+          this.favoritesRepository.create({
+            categoriesId: categoriesId,
+            postId: postId,
+          }),
+        );
+
+      return {
+        data: favoritPost,
+        error: false,
+        message: 'favorite post create',
+      };
     } catch (error) {
       Logger.log('error=> add post to favorites function ', error);
       throw error;

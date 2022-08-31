@@ -5,5 +5,8 @@ export class AddTagsDto {
   name: string[];
 
   @IsNumber()
-  postId: number;
+  postId?: number;
+
+  @IsNumber()
+  groupId?: number;
 }
