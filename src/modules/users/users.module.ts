@@ -7,10 +7,18 @@ import { AuthModule } from 'src/auth/auth.module';
 import { UserValidator } from 'src/shared/validators/user.validator';
 import { HashPassword } from 'src/shared/password-hash/hash.password';
 import { ReactionsEntityBase } from './entity/reactions.entity';
+import { CommentsEntityBase } from './entity/comments.entity';
+import { CommentsReactionsEntityBase } from './entity/comments.reactions.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UsersEntityBase, ReactionsEntityBase]),
+    TypeOrmModule.forFeature([
+      UsersEntityBase,
+      ReactionsEntityBase,
+      CommentsEntityBase,
+      ReactionsEntityBase,
+      CommentsReactionsEntityBase,
+    ]),
     forwardRef(() => AuthModule),
   ],
   providers: [UsersService, UserValidator, HashPassword],

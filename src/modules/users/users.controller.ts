@@ -13,7 +13,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { ReactionsDto } from './dto/reactions.dto';
 import { UsersService } from './users.service';
-import { CommentDto } from './dto/comment.dto'
+import { CommentDto } from './dto/comment.dto';
 import { CommentsReactionsDto } from './dto/comments.reactions.dto';
 @Controller('users')
 @ApiTags('Users')
@@ -79,19 +79,19 @@ export class UsersController {
       throw error;
     }
   }
-}
 
-@ApiBearerAuth()
-@Post('/reactUnreactComment')
-async reactUnreactComment(
-  @Body() body: CommentsReactionsDto,
-  @Res() res: Response,
-  @Req() req: any,
-) {
-  try {
-    const data = await this.usersService.reactComment(body, req);
-    return res.status(HttpStatus.ACCEPTED).json(data);
-  } catch (error) {
-    throw error;
+  @ApiBearerAuth()
+  @Post('/reactUnreactComment')
+  async reactUnreactComment(
+    @Body() body: CommentsReactionsDto,
+    @Res() res: Response,
+    @Req() req: any,
+  ) {
+    try {
+      const data = await this.usersService.reactComment(body, req);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
   }
 }
