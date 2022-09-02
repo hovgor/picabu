@@ -13,6 +13,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { SubscribeGroupEntityBase } from './subscribe.group.entity';
 
 @Entity({ schema: 'default', name: 'Users' })
 export class UsersEntityBase extends BaseEntity {
@@ -56,6 +57,13 @@ export class UsersEntityBase extends BaseEntity {
   })
   @JoinTable()
   postEntity: PostsEntityBase[];
+
+  @OneToMany(() => SubscribeGroupEntityBase, (user) => user.userId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  userEntity: SubscribeGroupEntityBase[];
 
   @OneToMany(
     () => CategorieForFavoritsEntityBase,

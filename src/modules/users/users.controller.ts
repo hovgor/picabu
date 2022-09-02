@@ -94,4 +94,34 @@ export class UsersController {
       throw error;
     }
   }
+
+  @ApiBearerAuth()
+  @Post('/subscribe/:groupId')
+  async subscribeGroup(
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Req() req: any,
+    @Res() res: Response,
+  ) {
+    try {
+      const subscribe = await this.usersService.subscribeGroup(groupId, req);
+      return res.status(HttpStatus.ACCEPTED).json(subscribe);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Post('/unsigned/:groupId')
+  async unsignedGroup(
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Req() req: any,
+    @Res() res: Response,
+  ) {
+    try {
+      const subscribe = await this.usersService.unsignedGroup(groupId, req);
+      return res.status(HttpStatus.ACCEPTED).json(subscribe);
+    } catch (error) {
+      throw error;
+    }
+  }
 }

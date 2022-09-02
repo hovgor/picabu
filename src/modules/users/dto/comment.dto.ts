@@ -20,7 +20,6 @@ export class CommentDto {
   @IsOptional()
   comment: string;
 
-
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

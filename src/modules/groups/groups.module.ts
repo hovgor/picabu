@@ -13,5 +13,6 @@ import { TegsService } from '../posts/tegs/tegs.service';
   ],
   controllers: [GroupsController],
   providers: [GroupsService, TegsService],
+  exports: [GroupsService],
 })
 export class GroupsModule {}

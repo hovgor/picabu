@@ -1,5 +1,6 @@
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 import { TagsEntityBase } from 'src/modules/posts/tegs/entity/tags.entity';
+import { SubscribeGroupEntityBase } from 'src/modules/users/entity/subscribe.group.entity';
 import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import {
   BaseEntity,
@@ -30,6 +31,13 @@ export class GroupsEntityBase extends BaseEntity {
   @Index()
   @Column()
   user: number;
+
+  @OneToMany(() => SubscribeGroupEntityBase, (group) => group.groupId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  groupEntity: SubscribeGroupEntityBase[];
 
   @Column({ default: null, nullable: true, unique: true })
   url: string;

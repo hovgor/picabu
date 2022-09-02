@@ -42,8 +42,11 @@ export class GroupsController {
   async deleteGroup(
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
+    @Req() req: any,
   ) {
     try {
+      const deleteGroup = await this.groupsService.deleteGroup(id, req);
+      return res.status(HttpStatus.NO_CONTENT).json(deleteGroup);
     } catch (error) {
       throw error;
     }

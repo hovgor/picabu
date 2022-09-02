@@ -9,6 +9,8 @@ import { HashPassword } from 'src/shared/password-hash/hash.password';
 import { ReactionsEntityBase } from './entity/reactions.entity';
 import { CommentsEntityBase } from './entity/comments.entity';
 import { CommentsReactionsEntityBase } from './entity/comments.reactions.entity';
+import { SubscribeGroupEntityBase } from './entity/subscribe.group.entity';
+import { GroupsModule } from '../groups/groups.module';
 
 @Module({
   imports: [
@@ -18,8 +20,10 @@ import { CommentsReactionsEntityBase } from './entity/comments.reactions.entity'
       CommentsEntityBase,
       ReactionsEntityBase,
       CommentsReactionsEntityBase,
+      SubscribeGroupEntityBase,
     ]),
     forwardRef(() => AuthModule),
+    GroupsModule,
   ],
   providers: [UsersService, UserValidator, HashPassword],
   controllers: [UsersController],

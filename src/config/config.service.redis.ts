@@ -1,5 +1,6 @@
 import { createClient } from 'redis';
 import * as dotenv from 'dotenv';
+import { Logger } from '@nestjs/common';
 dotenv.config();
 
 export const client = createClient({
@@ -9,7 +10,7 @@ export const client = createClient({
   },
 });
 
-client.on('connect', (err) => {
+client.on('connect', () => {
   switch (process.env.NODE_ENV) {
     case 'local':
       client.select(0);
@@ -24,11 +25,11 @@ client.on('connect', (err) => {
       client.select(3);
       break;
   }
-  console.log('Connected to Redis');
+  Logger.log('Connected to Redis');
 });
 
 client.on('error', (err) => {
-  console.log('Redis Client Error', err);
+  Logger.log('Redis Client Error', err);
   process.exit();
 });
 

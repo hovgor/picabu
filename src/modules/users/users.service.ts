@@ -14,6 +14,9 @@ import { ReactionsEntityBase } from './entity/reactions.entity';
 import { AuthService } from 'src/auth/auth.service';
 import { CommentsEntityBase } from './entity/comments.entity';
 import { CommentsReactionsEntityBase } from './entity/comments.reactions.entity';
+import { SubscribeGroupEntityBase } from './entity/subscribe.group.entity';
+import { GroupsService } from '../groups/groups.service';
+import { GroupsEntityBase } from '../groups/entity/groups.entity';
 
 @Injectable()
 export class UsersService {
@@ -28,6 +31,10 @@ export class UsersService {
     private commentRepository: Repository<CommentsEntityBase>,
     @InjectRepository(CommentsReactionsEntityBase)
     private commentReactionRepository: Repository<CommentsReactionsEntityBase>,
+    @InjectRepository(SubscribeGroupEntityBase)
+    private subscribeGroupRepository: Repository<SubscribeGroupEntityBase>,
+    @Inject(GroupsService)
+    private readonly groupsService: GroupsService,
   ) {}
 
   // get user by Id
@@ -127,7 +134,7 @@ export class UsersService {
     }
   }
 
-  async commentPost(body: any, request: any){
+  async commentPost(body: any, request: any) {
     try {
       const userAuth = await this.authService.verifyToken(request);
       if (!userAuth) {
@@ -212,6 +219,77 @@ export class UsersService {
       return reacted;
     } catch (error) {
       Logger.log('error=> react post function!!', error);
+      throw error;
+    }
+  }
+
+  // subscribe users to group
+  async subscribeGroup(groupId: number, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const group: GroupsEntityBase = await this.groupsService.getGroupById(
+        groupId,
+      );
+      if (!group) {
+        throw new BadRequestException('Group is not exist!!!');
+      }
+      if (user.id === group.user) {
+        throw new BadRequestException(
+          'This user is the creator of the group and he cannot subscribe.',
+        );
+      }
+      const isSubscribe = await this.subscribeGroupRepository.find({
+        where: { userId: user.id, groupId: groupId },
+      });
+
+      if (isSubscribe[0]) {
+        throw new BadRequestException('User already subscribed!!!');
+      }
+      const subscribe: SubscribeGroupEntityBase =
+        await this.subscribeGroupRepository.save(
+          this.subscribeGroupRepository.create({
+            userId: user.id,
+            groupId: groupId,
+          }),
+        );
+      return { data: subscribe, error: false, message: 'User is subscribed.' };
+    } catch (error) {
+      Logger.log('error=> subscribe group function ', error);
+      throw error;
+    }
+  }
+
+  // unsigned users to group
+  async unsignedGroup(groupId: number, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const group: GroupsEntityBase = await this.groupsService.getGroupById(
+        groupId,
+      );
+      if (!group) {
+        throw new BadRequestException('Group is not exist!!!');
+      }
+      if (user.id === group.user) {
+        throw new BadRequestException('This user is not subscribed.');
+      }
+      const isSubscribe: SubscribeGroupEntityBase[] =
+        await this.subscribeGroupRepository.find({
+          where: { userId: user.id, groupId: groupId },
+        });
+
+      if (!isSubscribe[0]) {
+        throw new BadRequestException('User is not subscribed!!!');
+      }
+      await this.subscribeGroupRepository.delete(isSubscribe[0].id);
+      return { data: null, error: false, message: 'User is unsigned.' };
+    } catch (error) {
+      Logger.log('error=> subscribe group function ', error);
       throw error;
     }
   }

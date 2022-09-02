@@ -14,6 +14,7 @@ import { CategorieForFavoritsEntityBase } from 'src/modules/categories_for_favor
 import { FavoritsEntityBase } from 'src/modules/posts/entity/favorite.post.entity';
 import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
 import { CommentsEntityBase } from 'src/modules/users/entity/comments.entity';
+import { SubscribeGroupEntityBase } from 'src/modules/users/entity/subscribe.group.entity';
 // import { ReplyCommentsEntityBase } from 'src/modules/users/entity/';
 
 @Injectable()
@@ -52,6 +53,7 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
         FavoritsEntityBase,
         GroupsEntityBase,
         CommentsEntityBase,
+        SubscribeGroupEntityBase,
         // ReplyCommentsEntityBase,
       ],
       // entities: [process.cwd(), 'entity/**/*.pg.entity.{js, ts}'],

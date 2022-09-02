@@ -9,7 +9,6 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  Unique,
 } from 'typeorm';
 import { UsersEntityBase } from './users.entity';
 
