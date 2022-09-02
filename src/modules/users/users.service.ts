@@ -12,6 +12,8 @@ import { Repository } from 'typeorm';
 import { UsersEntityBase } from './entity/users.entity';
 import { ReactionsEntityBase } from './entity/reactions.entity';
 import { AuthService } from 'src/auth/auth.service';
+import { CommentsEntityBase } from './entity/comments.entity';
+import { CommentsReactionsEntityBase } from './entity/comments.reactions.entity';
 
 @Injectable()
 export class UsersService {
@@ -22,6 +24,10 @@ export class UsersService {
     private postsRepository: Repository<ReactionsEntityBase>,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
+    @InjectRepository(CommentsEntityBase)
+    private commentRepository: Repository<CommentsEntityBase>,
+    @InjectRepository(CommentsReactionsEntityBase)
+    private commentReactionRepository: Repository<CommentsReactionsEntityBase>,
   ) {}
 
   // get user by Id
@@ -110,6 +116,95 @@ export class UsersService {
         { user_id: userId, post_id: postId, reaction_type: reactionType },
         {
           conflictPaths: ['user_id', 'post_id'],
+          skipUpdateIfNoValuesChanged: true,
+        },
+      );
+      if (!reacted) throw new Error('Reaction was not Counted');
+      return reacted;
+    } catch (error) {
+      Logger.log('error=> react post function!!', error);
+      throw error;
+    }
+  }
+
+  async commentPost(body: any, request: any){
+    try {
+      const userAuth = await this.authService.verifyToken(request);
+      if (!userAuth) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const { userId, postId, comment } = body;
+      const commented = await this.commentRepository.save(
+        this.commentRepository.create({
+          user_id: userId,
+          post_id: postId,
+          comment: comment,
+        }),
+      );
+      return {
+        data: commented,
+        error: false,
+        message: `commented successfully`,
+      };
+    } catch (error) {
+      Logger.log('error=> create comment function!!', error);
+      throw error;
+    }
+  }
+
+  async replyCommentPost(body: any, request: any) {
+    try {
+      const userAuth = await this.authService.verifyToken(request);
+      if (!userAuth) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const { userId, postId, commentId, comment } = body;
+      const commented = await this.commentRepository.save(
+        this.commentRepository.create({
+          user_id: userId,
+          post_id: postId,
+          parent_comment_id: commentId,
+          comment: comment,
+        }),
+      );
+      return {
+        data: commented,
+        error: false,
+        message: `commented successfully`,
+      };
+    } catch (error) {
+      Logger.log('error=> create comment function!!', error);
+      throw error;
+    }
+  }
+
+  async reactComment(body: any, request: any) {
+    try {
+      const userAuth = await this.authService.verifyToken(request);
+      if (!userAuth) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const { userId, commentId, reactionType } = body;
+      const ifReacted = await this.commentReactionRepository.findOne({
+        where: { user_id: userId },
+      });
+      if (ifReacted !== null) {
+        if (ifReacted.reaction_type == reactionType) {
+          return {
+            data: null,
+            error: false,
+            message: 'Your reaction was already counted',
+          };
+        }
+      }
+      const reacted = await this.commentReactionRepository.upsert(
+        {
+          user_id: userId,
+          comment_id: commentId,
+          reaction_type: reactionType,
+        },
+        {
+          conflictPaths: ['user_id', 'comment_id'],
           skipUpdateIfNoValuesChanged: true,
         },
       );
