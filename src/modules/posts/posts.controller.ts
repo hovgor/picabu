@@ -13,12 +13,15 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { PostReactions } from 'src/shared/types/reactions';
 import { AddToFAvoritesDto } from './dto/add.to.favorites.dto';
 import { CreatePostBodyDto } from './dto/create.post.body.dto';
 import { FilterSearchDto } from './dto/filter.search.dto';
+import { ReactionTypeForPostDto } from './dto/reaction.type.dto';
 import { PostsService } from './posts.service';
+import { ReactionIconsService } from './reaction-icons/reaction-icons.service';
 import { TagsService } from './tags/tags.service';
 
 @Controller('posts')
@@ -27,6 +30,7 @@ export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly tagsService: TagsService,
+    private readonly reactionIconsService: ReactionIconsService,
   ) {}
 
   @UsePipes(new ValidationPipe())
@@ -59,6 +63,28 @@ export class PostsController {
         data: null,
         error: false,
       });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @UsePipes(new ValidationPipe())
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'reactionType', enum: PostReactions })
+  @Post('addReactionIcon')
+  async addReactionForPost(
+    @Res() res: Response,
+    @Req() req: any,
+    @Query('reactionType') reactionType: PostReactions = PostReactions.default,
+    @Body() body: ReactionTypeForPostDto,
+  ) {
+    try {
+      const reaction = await this.reactionIconsService.addReactionIconsForPosts(
+        body.postId,
+        req,
+        reactionType,
+      );
+      return res.status(HttpStatus.ACCEPTED).json(reaction);
     } catch (error) {
       throw error;
     }

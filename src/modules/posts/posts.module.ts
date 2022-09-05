@@ -13,6 +13,9 @@ import { TagsService } from './tags/tags.service';
 import { TagsEntityBase } from './tags/entity/tags.entity';
 import { CategoriesForFavoriteModule } from '../categories_for_favorite/categories_for_favorite.module';
 import { FavoritsEntityBase } from './entity/favorite.post.entity';
+import { ReactionIconsService } from './reaction-icons/reaction-icons.service';
+import { ReactionIconsEntityBase } from './reaction-icons/entity/reaction.icons.entity';
+import { PostValidator } from 'src/shared/validators/post.validator';
 
 @Module({
   imports: [
@@ -21,13 +24,20 @@ import { FavoritsEntityBase } from './entity/favorite.post.entity';
       UploadFileEntityBase,
       TagsEntityBase,
       FavoritsEntityBase,
+      ReactionIconsEntityBase,
     ]),
     UsersModule,
     AuthModule,
     forwardRef(() => CategoriesForFavoriteModule),
   ],
   controllers: [PostsController],
-  providers: [PostsService, UploadFileService, TagsService],
+  providers: [
+    PostsService,
+    UploadFileService,
+    TagsService,
+    ReactionIconsService,
+    PostValidator,
+  ],
   exports: [PostsService, TagsService],
 })
 export class PostsModule {}
