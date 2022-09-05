@@ -200,11 +200,11 @@ export class CategoriesForFavoriteService {
         const post = await this.postsRepository
           .createQueryBuilder('post')
           .leftJoinAndSelect('post.uploadFileEntity', 'upload_fileId')
-          .leftJoinAndSelect('post.tagsEntity', 'tegsId')
+          .leftJoinAndSelect('post.tagsEntity', 'tagsId')
           .andWhere('upload_fileId.postId = :id', {
             id: categorieFavorite[0].categoriesEntity[i].postId,
           })
-          .andWhere('tegsId.postId = :id', {
+          .andWhere('tagsId.postId = :id', {
             id: categorieFavorite[0].categoriesEntity[i].postId,
           })
           .where('post.id = :id', { i })

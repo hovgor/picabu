@@ -12,7 +12,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { TagsEntityBase } from '../tegs/entity/tags.entity';
+import { TagsEntityBase } from '../tags/entity/tags.entity';
 import { UploadFileEntityBase } from '../upload_file/entity/upload_file.entity';
 import { FavoritsEntityBase } from './favorite.post.entity';
 

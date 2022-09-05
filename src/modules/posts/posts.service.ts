@@ -12,9 +12,12 @@ import { AuthService } from 'src/auth/auth.service';
 import { Repository } from 'typeorm';
 import { CategoriesForFavoriteService } from '../categories_for_favorite/categories_for_favorite.service';
 import { CreatePostBodyDto } from './dto/create.post.body.dto';
+import { FilterSearchDto } from './dto/filter.search.dto';
 import { FavoritsEntityBase } from './entity/favorite.post.entity';
 import { PostsEntityBase } from './entity/posts.entity';
-import { TegsService } from './tegs/tegs.service';
+import { TagsEntityBase } from './tags/entity/tags.entity';
+import { TagsService } from './tags/tags.service';
+import { UploadFileEntityBase } from './upload_file/entity/upload_file.entity';
 import { UploadFileService } from './upload_file/upload_file.service';
 
 @Injectable()
@@ -22,12 +25,16 @@ export class PostsService {
   constructor(
     @InjectRepository(PostsEntityBase)
     private postsRepository: Repository<PostsEntityBase>,
+    @InjectRepository(TagsEntityBase)
+    private tagsRepository: Repository<TagsEntityBase>,
+    @InjectRepository(UploadFileEntityBase)
+    private uploadFileRepository: Repository<UploadFileEntityBase>,
     @InjectRepository(FavoritsEntityBase)
     private favoritesRepository: Repository<FavoritsEntityBase>,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
     private readonly uploadFileService: UploadFileService,
-    private readonly tagsService: TegsService,
+    private readonly tagsService: TagsService,
     @Inject(forwardRef(() => CategoriesForFavoriteService))
     private readonly categoriesForFavoritesService: CategoriesForFavoriteService,
   ) {}
@@ -95,9 +102,9 @@ export class PostsService {
       const post = await this.postsRepository
         .createQueryBuilder('post')
         .leftJoinAndSelect('post.uploadFileEntity', 'upload_fileId')
-        .leftJoinAndSelect('post.tagsEntity', 'tegsId')
+        .leftJoinAndSelect('post.tagsEntity', 'tagsId')
         .andWhere('upload_fileId.postId = :id', { id })
-        .andWhere('tegsId.postId = :id', { id })
+        .andWhere('tagsId.postId = :id', { id })
         .where('post.id = :id', { id })
         .getOne();
       if (!post) {
@@ -153,6 +160,86 @@ export class PostsService {
       };
     } catch (error) {
       Logger.log('error=> add post to favorites function ', error);
+      throw error;
+    }
+  }
+
+  //search posts by title
+  async searchByTitlePost(query: FilterSearchDto, request: any) {
+    try {
+      // const user = await this.authService.verifyToken(request);
+      // if (!user) {
+      //   throw new UnauthorizedException('User not authorization!!!');
+      // }
+
+      const [result, count] = await this.postsRepository
+        .createQueryBuilder('posts')
+        .limit(query.limit)
+        .offset(query.offset)
+        .orderBy('posts.createdAt', 'DESC')
+        .where(`lower("posts"."title") LIKE lower('${query.beginning || ''}%')`)
+        .getManyAndCount();
+      return {
+        data: { result, count },
+        error: false,
+        message: 'this is a posts',
+      };
+    } catch (error) {
+      Logger.log('error=> search post function ', error);
+      throw error;
+    }
+  }
+
+  // search posts by tags
+  async searchByTagsPost(query: FilterSearchDto, request: any) {
+    try {
+      // const user = await this.authService.verifyToken(request);
+      // if (!user) {
+      //   throw new UnauthorizedException('User not authorization!!!');
+      // }
+
+      const [result, count] = await this.tagsRepository
+        .createQueryBuilder('tags')
+        .leftJoinAndSelect('tags.postId', 'postId')
+        .limit(query.limit)
+        .offset(query.offset)
+        .orderBy('tags.createdAt', 'DESC')
+        .where(`lower("tags"."name") LIKE lower('${query.beginning || ''}%')`)
+        .getManyAndCount();
+      return {
+        data: { result: result, count },
+        error: false,
+        message: 'this is a posts',
+      };
+    } catch (error) {
+      Logger.log('error=> search post function ', error);
+      throw error;
+    }
+  }
+
+  // search posts by attachments
+  async searchByAttachmentsPost(query: FilterSearchDto, request: any) {
+    try {
+      // const user = await this.authService.verifyToken(request);
+      // if (!user) {
+      //   throw new UnauthorizedException('User not authorization!!!');
+      // }
+
+      const [result, count] = await this.uploadFileRepository
+        .createQueryBuilder('file')
+        .leftJoinAndSelect('file.postId', 'postId')
+        .limit(query.limit)
+        .offset(query.offset)
+        .orderBy('file.createdAt', 'DESC')
+        .where(`lower("file"."path") LIKE lower('${query.beginning || ''}%')`)
+        .getManyAndCount();
+      return {
+        data: { result: result, count },
+        error: false,
+        message: 'this is a posts',
+      };
+    } catch (error) {
+      Logger.log('error=> search post function ', error);
       throw error;
     }
   }

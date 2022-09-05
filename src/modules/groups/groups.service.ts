@@ -9,8 +9,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { Repository } from 'typeorm';
-// import { TagsEntityBase } from '../posts/tegs/entity/tags.entity';
-import { TegsService } from '../posts/tegs/tegs.service';
+// import { TagsEntityBase } from '../posts/tags/entity/tags.entity';
+import { TagsService } from '../posts/tags/tags.service';
 import { UsersEntityBase } from '../users/entity/users.entity';
 import { CreateGroupDto } from './dto/create.group.dto';
 import { GroupsEntityBase } from './entity/groups.entity';
@@ -22,7 +22,7 @@ export class GroupsService {
     private readonly groupsRepository: Repository<GroupsEntityBase>,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
-    private readonly tagsService: TegsService,
+    private readonly tagsService: TagsService,
   ) {}
 
   async createGroup(data: CreateGroupDto, request: any) {

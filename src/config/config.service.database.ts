@@ -9,7 +9,7 @@ import { ReactionsEntityBase } from '../modules/users/entity/reactions.entity';
 dotenv.config();
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 import { UploadFileEntityBase } from 'src/modules/posts/upload_file/entity/upload_file.entity';
-import { TagsEntityBase } from 'src/modules/posts/tegs/entity/tags.entity';
+import { TagsEntityBase } from 'src/modules/posts/tags/entity/tags.entity';
 import { CategorieForFavoritsEntityBase } from 'src/modules/categories_for_favorite/entity/categorie.for.favorits.entity';
 import { FavoritsEntityBase } from 'src/modules/posts/entity/favorite.post.entity';
 import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';

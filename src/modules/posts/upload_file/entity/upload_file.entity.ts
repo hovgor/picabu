@@ -1,5 +1,4 @@
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
-import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import {
   BaseEntity,
   Column,
