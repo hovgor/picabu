@@ -1,11 +1,13 @@
 import {
   BadRequestException,
+  ForbiddenException,
   forwardRef,
   Inject,
   Injectable,
   Logger,
   NotFoundException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
@@ -55,6 +57,12 @@ export class CategoriesForFavoriteService {
   ) {
     try {
       const user = await this.authService.verifyToken(request);
+      const validCategories = await this.categorieForFavoritsRepository.findOne(
+        { where: { title: data.title } },
+      );
+      if (validCategories) {
+        throw new BadRequestException('Categories title is exist!!!');
+      }
       const categorieForFavorites =
         await this.categorieForFavoritsRepository.save(
           this.categorieForFavoritsRepository.create({
@@ -94,7 +102,7 @@ export class CategoriesForFavoriteService {
       }
       if (categories.title === 'Default') {
         Logger.log("Can't delete default category!!!");
-        throw new BadRequestException("Can't delete default category!!!");
+        throw new BadRequestException("Can't delete Default category!!!");
       }
 
       return await this.categorieForFavoritsRepository.delete(id);
@@ -227,11 +235,20 @@ export class CategoriesForFavoriteService {
       if (!user) {
         throw new UnauthorizedException('User not authorized!!!');
       }
+      const validCategories = await this.categorieForFavoritsRepository.findOne(
+        { where: { id: data.categorieId } },
+      );
+      if (!validCategories && validCategories.user !== user.id) {
+        throw new ForbiddenException('Access is denied!!!');
+      }
       const categorieFavorite = await this.categorieForFavoritsRepository
         .createQueryBuilder('categorie')
         .leftJoinAndSelect('categorie.categoriesEntity', 'favoritesId')
         .where('favoritesId.categoriesId = :id', { id: data.categorieId })
         .getOne();
+      if (!categorieFavorite) {
+        throw new UnprocessableEntityException('Something went wrong!!!');
+      }
       if (categorieFavorite.user !== user.id) {
         throw new UnauthorizedException('User not authorized!!!');
       }

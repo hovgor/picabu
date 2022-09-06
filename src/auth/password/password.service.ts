@@ -39,6 +39,13 @@ export class PasswordService {
         Logger.log('error => email is not defined!!');
         throw new BadRequestException('email is not defined!!!');
       }
+
+      const validUser = await this.usersRepository.findOne({
+        where: { email: verifyEmail },
+      });
+      if (!validUser) {
+        throw new NotFoundException('User not found!!!');
+      }
       const message = {
         to: verifyEmail,
         subject: 'Verify accaunt',
@@ -50,14 +57,10 @@ export class PasswordService {
       const sendEmail = mailer(message);
       if (sendEmail) {
         return {
-          data: null,
-          error: false,
           message: `email sent to mail ${email}`,
         };
       } else {
         return {
-          // data: null,
-          // error: true,
           message: `email don't sent to mail ${email}`,
           success: false,
         };
@@ -71,6 +74,18 @@ export class PasswordService {
   // change password
   async changePassword(data: ChangePasswordDto) {
     try {
+      const verifyEmail = this.userValidator.userEmail(data.email);
+      if (!verifyEmail) {
+        Logger.log('error => email is not defined!!');
+        throw new BadRequestException('email is not defined!!!');
+      }
+
+      const validUser = await this.usersRepository.findOne({
+        where: { email: verifyEmail },
+      });
+      if (!validUser) {
+        throw new NotFoundException('User not found!!!');
+      }
       const verifyTicketId = await client.get(data.email.toLowerCase());
       if (verifyTicketId !== data.ticket) {
         Logger.log('Ticket is not verify');
@@ -96,7 +111,6 @@ export class PasswordService {
         data: null,
         error: false,
         message: 'password is updated!!!',
-        success: true,
       };
     } catch (error) {
       Logger.log('error=> change password function ', error);
@@ -115,6 +129,12 @@ export class PasswordService {
       if (!verifyEmail) {
         Logger.log('error => email is not defined!!');
         throw new BadRequestException('email is not defined!!!');
+      }
+      const validUser = await this.usersRepository.findOne({
+        where: { email: verifyEmail },
+      });
+      if (!validUser) {
+        throw new NotFoundException('User not found!!!');
       }
       const pinVerify = await this.emailVerifyWhitMail(verifyEmail);
       return {
@@ -137,6 +157,12 @@ export class PasswordService {
       if (!verifyEmail) {
         Logger.log('error => email is not defined!!');
         throw new BadRequestException('email is not defined!!!');
+      }
+      const validUser = await this.usersRepository.findOne({
+        where: { email: verifyEmail },
+      });
+      if (!validUser) {
+        throw new NotFoundException('User not found!!!');
       }
 
       const redisPinCode = await client.get(verifyEmail);

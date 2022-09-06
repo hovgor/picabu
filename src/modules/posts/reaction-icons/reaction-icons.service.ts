@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
-import { PostReactions } from 'src/shared/types/reactions';
 import { PostValidator } from 'src/shared/validators/post.validator';
 import { Repository } from 'typeorm';
 import { ReactionIconsEntityBase } from './entity/reaction.icons.entity';
