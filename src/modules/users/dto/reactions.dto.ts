@@ -6,12 +6,6 @@ export class ReactionsDto {
   @IsNumber()
   @IsNotEmpty()
   @IsOptional()
-  userId: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty()
-  @IsOptional()
   postId: number;
 
   @ApiProperty()

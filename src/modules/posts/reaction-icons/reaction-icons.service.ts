@@ -3,12 +3,14 @@ import {
   Inject,
   Injectable,
   Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { PostValidator } from 'src/shared/validators/post.validator';
 import { Repository } from 'typeorm';
+import { PostsEntityBase } from '../entity/posts.entity';
 import { ReactionIconsEntityBase } from './entity/reaction.icons.entity';
 
 @Injectable()
@@ -19,6 +21,8 @@ export class ReactionIconsService {
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
     private readonly postValidator: PostValidator,
+    @InjectRepository(PostsEntityBase)
+    private readonly postsRepository: Repository<PostsEntityBase>,
   ) {}
 
   async addReactionIconsForPosts(
@@ -30,6 +34,14 @@ export class ReactionIconsService {
       const user = await this.authService.verifyToken(request);
       if (!user) {
         throw new UnauthorizedException('User not authorization!!!');
+      }
+
+      const validPost = await this.postsRepository.findOne({
+        where: { id: postId },
+      });
+
+      if (!validPost) {
+        throw new NotFoundException('Post is not defined!!!');
       }
 
       const validReactionType = this.postValidator.reactionIcons(reactionType);

@@ -11,7 +11,7 @@ export class CreatePostBodyDto {
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ default: null })
+  @ApiProperty({ default: null })
   tags?: any[] = null;
 
   @ApiPropertyOptional({ default: null })

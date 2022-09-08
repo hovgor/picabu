@@ -17,6 +17,8 @@ import { CommentsReactionsEntityBase } from './entity/comments.reactions.entity'
 import { SubscribeGroupEntityBase } from './entity/subscribe.group.entity';
 import { GroupsService } from '../groups/groups.service';
 import { GroupsEntityBase } from '../groups/entity/groups.entity';
+import { ReactionsDto } from './dto/reactions.dto';
+import { PostsEntityBase } from '../posts/entity/posts.entity';
 
 @Injectable()
 export class UsersService {
@@ -24,7 +26,7 @@ export class UsersService {
     @InjectRepository(UsersEntityBase)
     private usersRepository: Repository<UsersEntityBase>,
     @InjectRepository(ReactionsEntityBase)
-    private postsRepository: Repository<ReactionsEntityBase>,
+    private reactionsRepository: Repository<ReactionsEntityBase>,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
     @InjectRepository(CommentsEntityBase)
@@ -35,6 +37,8 @@ export class UsersService {
     private subscribeGroupRepository: Repository<SubscribeGroupEntityBase>,
     @Inject(GroupsService)
     private readonly groupsService: GroupsService,
+    @InjectRepository(PostsEntityBase)
+    private readonly postRepository: Repository<PostsEntityBase>,
   ) {}
 
   // get user by Id
@@ -99,15 +103,22 @@ export class UsersService {
   }
 
   //react post
-  async reactPost(body: any, request: any) {
+  async reactPost(body: ReactionsDto, request: any) {
     try {
       const userAuth = await this.authService.verifyToken(request);
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
-      const { userId, postId, reactionType } = body;
-      const ifReacted = await this.postsRepository.findOne({
-        where: { user_id: userId },
+      const post = await this.postRepository.findOne({
+        where: { id: body.postId },
+      });
+      if (!post) {
+        throw new NotFoundException('Post is not defined!!!');
+      }
+
+      const { postId, reactionType } = body;
+      const ifReacted = await this.reactionsRepository.findOne({
+        where: { user_id: userAuth.id },
       });
       if (ifReacted !== null) {
         if (ifReacted.reaction_type == reactionType) {
@@ -118,15 +129,20 @@ export class UsersService {
           };
         }
       }
-      // const data = { userId, postId, reactionType };
-      const reacted = await this.postsRepository.upsert(
-        { user_id: userId, post_id: postId, reaction_type: reactionType },
+      const reacted = await this.reactionsRepository.upsert(
+        { user_id: userAuth.id, post_id: postId, reaction_type: reactionType },
         {
           conflictPaths: ['user_id', 'post_id'],
           skipUpdateIfNoValuesChanged: true,
         },
       );
       if (!reacted) throw new Error('Reaction was not Counted');
+      let count = post.like;
+      count += body.reactionType;
+      await this.postRepository.update({ id: postId }, { like: count });
+      if (post.like === -100) {
+        await this.postRepository.delete(postId);
+      }
       return reacted;
     } catch (error) {
       Logger.log('error=> react post function!!', error);

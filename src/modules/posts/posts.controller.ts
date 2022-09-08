@@ -13,7 +13,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { PostReactions } from 'src/shared/types/reactions';
 import { AddToFAvoritesDto } from './dto/add.to.favorites.dto';
@@ -35,6 +35,11 @@ export class PostsController {
 
   @UsePipes(new ValidationPipe())
   @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description:
+      'Create posts. To create a post , you need a mandatory field , a header, at least three tags , a description of the post is not necessary , an attachment is not desirable.',
+  })
   @Post('/create')
   async createPost(
     @Body() body: CreatePostBodyDto,
@@ -51,6 +56,10 @@ export class PostsController {
 
   @UsePipes(new ValidationPipe())
   @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Delete post by id. Id most be a number.',
+  })
   @Delete(':id')
   async deletePost(
     @Res() res: Response,
@@ -70,6 +79,11 @@ export class PostsController {
 
   @UsePipes(new ValidationPipe())
   @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description:
+      'Add reactions to posts. The reaction to the post is like an array , but eventually it becomes numbers . There are fixed types of reactions .',
+  })
   @ApiQuery({ name: 'reactionType', enum: PostReactions })
   @Post('addReactionIcon')
   async addReactionForPost(
@@ -92,7 +106,12 @@ export class PostsController {
 
   @UsePipes(new ValidationPipe())
   @ApiBearerAuth()
-  @Post('add-to-favorites')
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description:
+      'Add a post to the favorites category. It is necessary to insert the category ID and post id into the body.',
+  })
+  @Post('addToFavorites')
   async addPostToFavorites(
     @Res() res: Response,
     @Req() req,
@@ -112,7 +131,12 @@ export class PostsController {
 
   @UsePipes(new ValidationPipe())
   // @ApiBearerAuth()
-  @Get('/search-by-title')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description:
+      'The body shows offset and limit, optional fields. In order to find a post there is a beginning field, get by post name. If all inputs null endpoint get all.',
+  })
+  @Get('/searchByTitle')
   async getPostByTitleSearch(
     @Req() req: any,
     @Res() res: Response,
@@ -128,7 +152,12 @@ export class PostsController {
 
   @UsePipes(new ValidationPipe())
   // @ApiBearerAuth()
-  @Get('/search-by-tags')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description:
+      'The body shows offset and limit, optional fields. In order to find a post there is a beginning field, get by tags name. If all inputs null endpoint get all.',
+  })
+  @Get('/searchByTags')
   async getPostByTagsSearch(
     @Req() req: any,
     @Res() res: Response,
@@ -145,7 +174,12 @@ export class PostsController {
   // get posts by attachments
   @UsePipes(new ValidationPipe())
   // @ApiBearerAuth()
-  @Get('/search-by-attachments')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description:
+      'The body shows offset and limit, optional fields. In order to find a post there is a beginning field, get by attachment name. If all inputs null endpoint get all.',
+  })
+  @Get('/searchByAttachments')
   async getPostByAttachmentsSearch(
     @Req() req: any,
     @Res() res: Response,
@@ -161,6 +195,10 @@ export class PostsController {
 
   // get posts
   @UsePipes(new ValidationPipe())
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Find posts by ID.',
+  })
   @Get(':id')
   async getPost(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     try {
@@ -173,17 +211,21 @@ export class PostsController {
   }
 
   // get tags
-  @UsePipes(new ValidationPipe())
-  @Get(':id')
-  async gettags(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-    try {
-      const post = await this.postsService.getPostById(id);
+  // @UsePipes(new ValidationPipe())
+  //   @ApiResponse({
+  //   status: HttpStatus.OK,
+  //   description: 'Find posts by ID.',
+  // })
+  // @Get(':id')
+  // async gettags(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+  //   try {
+  //     const post = await this.postsService.getPostById(id);
 
-      return res.status(HttpStatus.OK).json(post);
-    } catch (error) {
-      throw error;
-    }
-  }
+  //     return res.status(HttpStatus.OK).json(post);
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
   // @UsePipes(new ValidationPipe())
   // @Patch('like-count/:id')
