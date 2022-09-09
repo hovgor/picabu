@@ -15,6 +15,9 @@ import { ReactionsDto } from './dto/reactions.dto';
 import { UsersService } from './users.service';
 import { CommentDto } from './dto/comment.dto';
 import { CommentsReactionsDto } from './dto/comments.reactions.dto';
+import { FeedDto } from './dto/feed.dto';
+import { followUnfollowDto } from './dto/follow.unfollow.dto';
+
 @Controller('users')
 @ApiTags('Users')
 export class UsersController {
@@ -120,6 +123,42 @@ export class UsersController {
     try {
       const subscribe = await this.usersService.unsignedGroup(groupId, req);
       return res.status(HttpStatus.ACCEPTED).json(subscribe);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Post('/followUnfollowUser')
+  async followUnfollowUser(
+    @Req() req: any,
+    @Res() res: Response,
+    @Body() body: followUnfollowDto,
+  ) {
+    try {
+      const userId = body.userId;
+      const followToId = body.followToId;
+      const data = body.userFollowsAccount
+        ? await this.usersService.unfollowUser(userId, followToId)
+        : await this.usersService.followUser(userId, followToId);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Get('/feed/:status')
+  async getFeed(
+    @Param('status') status: string,
+    @Req() req: any,
+    @Res() res: Response,
+    @Body() body: FeedDto,
+  ) {
+    try {
+      const status = req.params.status;
+      const getFeed = await this.usersService.getFeed(status, body);
+      return res.status(HttpStatus.ACCEPTED).json(getFeed);
     } catch (error) {
       throw error;
     }

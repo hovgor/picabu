@@ -5,7 +5,7 @@ import { PasswordlessNameDto } from 'src/auth/dto/providers.params.dto';
 import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 // import { generateNickname } from '../../shared/utils/utils';
 import { Repository } from 'typeorm';
-import { AuthEntityBase } from '../../auth/entity/auth.entity';
+// import { AuthEntityBase } from '../../auth/entity/auth.entity';
 import { AuthService } from '../auth.service';
 
 @Injectable()
@@ -13,8 +13,7 @@ export class ProvidersService {
   constructor(
     @InjectRepository(UsersEntityBase)
     private usersRepository: Repository<UsersEntityBase>,
-    @InjectRepository(AuthEntityBase)
-    public authRepository: Repository<AuthEntityBase>,
+
     private readonly authService: AuthService,
   ) {}
 

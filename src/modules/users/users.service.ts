@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   forwardRef,
   Inject,
   Injectable,
@@ -17,6 +18,8 @@ import { CommentsReactionsEntityBase } from './entity/comments.reactions.entity'
 import { SubscribeGroupEntityBase } from './entity/subscribe.group.entity';
 import { GroupsService } from '../groups/groups.service';
 import { GroupsEntityBase } from '../groups/entity/groups.entity';
+import { PostsEntityBase } from '../posts/entity/posts.entity';
+import { UserFollowEntitiyBase } from './entity/user.following.entity';
 
 @Injectable()
 export class UsersService {
@@ -24,7 +27,9 @@ export class UsersService {
     @InjectRepository(UsersEntityBase)
     private usersRepository: Repository<UsersEntityBase>,
     @InjectRepository(ReactionsEntityBase)
-    private postsRepository: Repository<ReactionsEntityBase>,
+    private postsReactionRepository: Repository<ReactionsEntityBase>,
+    @InjectRepository(PostsEntityBase)
+    private postsRepository: Repository<PostsEntityBase>,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
     @InjectRepository(CommentsEntityBase)
@@ -32,6 +37,8 @@ export class UsersService {
     @InjectRepository(CommentsReactionsEntityBase)
     private commentReactionRepository: Repository<CommentsReactionsEntityBase>,
     @InjectRepository(SubscribeGroupEntityBase)
+    private userFollowRepository: Repository<UserFollowEntitiyBase>,
+    @InjectRepository(UserFollowEntitiyBase)
     private subscribeGroupRepository: Repository<SubscribeGroupEntityBase>,
     @Inject(GroupsService)
     private readonly groupsService: GroupsService,
@@ -106,7 +113,7 @@ export class UsersService {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const { userId, postId, reactionType } = body;
-      const ifReacted = await this.postsRepository.findOne({
+      const ifReacted = await this.postsReactionRepository.findOne({
         where: { user_id: userId },
       });
       if (ifReacted !== null) {
@@ -119,13 +126,17 @@ export class UsersService {
         }
       }
       // const data = { userId, postId, reactionType };
-      const reacted = await this.postsRepository.upsert(
+      const reacted = await this.postsReactionRepository.upsert(
         { user_id: userId, post_id: postId, reaction_type: reactionType },
         {
           conflictPaths: ['user_id', 'post_id'],
           skipUpdateIfNoValuesChanged: true,
         },
       );
+      const reactionsCount = await this.postsRepository
+        .createQueryBuilder()
+        .update(this.postsRepository)
+        .set({ rating: () => `rating + ${reactionType}` });
       if (!reacted) throw new Error('Reaction was not Counted');
       return reacted;
     } catch (error) {
@@ -288,6 +299,76 @@ export class UsersService {
       }
       await this.subscribeGroupRepository.delete(isSubscribe[0].id);
       return { data: null, error: false, message: 'User is unsigned.' };
+    } catch (error) {
+      Logger.log('error=> subscribe group function ', error);
+      throw error;
+    }
+  }
+
+  async unfollowUser(userId: number, followToId: number) {
+    try {
+      const unFollowed = this.userFollowRepository
+        .createQueryBuilder()
+        .delete()
+        .where(`userId = ${userId} && followToId = ${followToId}`)
+        .execute();
+      if (!unFollowed) {
+        return {
+          data: null,
+          error: false,
+          message: "User doesn't follow to user you want to unfollow from",
+        };
+      }
+      return { data: null, error: false, message: 'Successfully Unfollowed' };
+    } catch (error) {
+      Logger.log('error=> subscribe group function ', error);
+      throw error;
+    }
+  }
+
+  async followUser(userId: number, followToId: number) {
+    try {
+      const followUser = this.userFollowRepository.save(
+        this.userFollowRepository.create({
+          user_id: userId,
+          follow_to_id: followToId,
+        }),
+      );
+      return {
+        data: followUser,
+        error: false,
+        message: 'Successfully Followed',
+      };
+    } catch (error) {
+      Logger.log('error=> subscribe group function ', error);
+      throw error;
+    }
+  }
+
+  async getFeed(status: string, body: any) {
+    try {
+      let feed;
+      const userId = body.id;
+      if (status === 'new') {
+        feed = this.postsRepository
+          .createQueryBuilder('Posts')
+          .orderBy('created_date', 'DESC');
+      }
+      if (status === 'top') {
+        feed = this.postsRepository
+          .createQueryBuilder('Posts')
+          .orderBy('rating', 'DESC');
+      }
+      if (status === 'myFeed') {
+        const followingsId = this.userFollowRepository
+          .createQueryBuilder('user_following')
+          .where(`user_id = ${userId}`);
+        feed = this.postsRepository
+          .createQueryBuilder('Posts')
+          .where(`user_id = ${userId}`)
+          .orderBy('created_date', 'DESC');
+      }
+      return { data: feed, error: false, message: 'User is unsigned.' };
     } catch (error) {
       Logger.log('error=> subscribe group function ', error);
       throw error;
