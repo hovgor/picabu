@@ -21,21 +21,6 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @ApiBearerAuth()
-  @Get(':id')
-  async getUserById(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-    @Req() req: any,
-  ) {
-    try {
-      const user = await this.usersService.getUserById(id, req);
-      res.status(HttpStatus.OK).json(user);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @ApiBearerAuth()
   @Post('/reactUnreactPost')
   async reactUnreactPost(
     @Body() body: ReactionsDto,
@@ -120,6 +105,32 @@ export class UsersController {
     try {
       const subscribe = await this.usersService.unsignedGroup(groupId, req);
       return res.status(HttpStatus.ACCEPTED).json(subscribe);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Get('/me')
+  async getMe(@Res() res: Response, @Req() req: any) {
+    try {
+      const user = await this.usersService.getMe(req);
+      res.status(HttpStatus.OK).json(user);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Get(':id')
+  async getUserById(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+    @Req() req: any,
+  ) {
+    try {
+      const user = await this.usersService.getUserById(id, req);
+      res.status(HttpStatus.OK).json(user);
     } catch (error) {
       throw error;
     }

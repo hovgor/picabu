@@ -22,6 +22,7 @@ import { IJwtPayload } from './constants/jwt.payload.interface';
 import { TokenForDbDto } from './dto/token.for.db.dto';
 import { AuthEntityBase } from './entity/auth.entity';
 import { CategoriesForFavoriteService } from 'src/modules/categories_for_favorite/categories_for_favorite.service';
+import { LogoutDto } from './dto/logout.dto';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mailer = require('../shared/email/mail.sender');
 // const mailer = require('../shared/email/mail.sender');
@@ -214,6 +215,7 @@ export class AuthService {
         userId: user.id,
         accessToken: accessToken,
         refreshToken: refreshToken,
+        deviceId: data.deviceId,
       });
       await this.categoriesForFavoriteService.createCategorieForFavoritWhitSignUp(
         user.id,
@@ -343,6 +345,58 @@ export class AuthService {
       return user;
     } catch (error) {
       Logger.log('error=> token verify function ', error);
+      throw error;
+    }
+  }
+
+  // logout
+  async logout(data: LogoutDto, request: any) {
+    try {
+      const user: UsersEntityBase = await this.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User is not authorized!!!');
+      }
+
+      const isValidToken = await this.authRepository.findOne({
+        where: { deviceId: data.deviceId },
+      });
+      if (!isValidToken) {
+        throw new BadRequestException('Device Id is not defined!!!');
+      }
+      await this.authRepository
+        .createQueryBuilder()
+        .delete()
+        .from(AuthEntityBase)
+        .where('deviceId = :deviceId', { deviceId: data.deviceId })
+        .andWhere('userId = :userId', { userId: user.id })
+        .execute();
+
+      return { data: null, error: false, message: 'User is logout.' };
+    } catch (error) {
+      Logger.log('error=> logout user function ', error);
+      throw error;
+    }
+  }
+
+  // logout all devices
+  async logoutAllDevices(request: any) {
+    try {
+      const user: UsersEntityBase = await this.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User is not authorized!!!');
+      }
+      await this.authRepository
+        .createQueryBuilder()
+        .delete()
+        .where('userId = :userId', { userId: user.id })
+        .execute();
+      return {
+        data: null,
+        error: false,
+        message: 'User is logout all devices!!!',
+      };
+    } catch (error) {
+      Logger.log('error=> logout user function ', error);
       throw error;
     }
   }

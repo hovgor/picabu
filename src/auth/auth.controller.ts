@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpStatus,
   Post,
+  Req,
   Res,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { EmailVerifyDto } from 'src/modules/users/dto/email.verify.dto';
 
@@ -14,6 +16,7 @@ import { UserSignInDto } from 'src/modules/users/dto/user.signin.dto';
 import { UserSignUpDto } from 'src/modules/users/dto/user.signup.dto';
 import { UsersService } from 'src/modules/users/users.service';
 import { AuthService } from './auth.service';
+import { LogoutDto } from './dto/logout.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -76,6 +79,37 @@ export class AuthController {
     try {
       const signIn = await this.authService.signInUser(body);
       return res.status(HttpStatus.ACCEPTED).json(signIn);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Delete('logout')
+  @ApiResponse({
+    status: HttpStatus.RESET_CONTENT,
+    description: 'For logout user you need insert token and divace id.',
+  })
+  async logout(@Body() body: LogoutDto, @Req() req: any, @Res() res: Response) {
+    try {
+      await this.authService.logout(body, req);
+      return res.status(HttpStatus.RESET_CONTENT).json();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Delete('logoutAllDevices')
+  @ApiResponse({
+    status: HttpStatus.RESET_CONTENT,
+    description:
+      'For logout user you need insert token and divace id. This endpoint is deleted all tokens in database.',
+  })
+  async logoutAllDevices(@Req() req: any, @Res() res: Response) {
+    try {
+      await this.authService.logoutAllDevices(req);
+      return res.status(HttpStatus.RESET_CONTENT).json();
     } catch (error) {
       throw error;
     }

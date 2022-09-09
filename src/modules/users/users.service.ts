@@ -41,6 +41,20 @@ export class UsersService {
     private readonly postRepository: Repository<PostsEntityBase>,
   ) {}
 
+  // get me
+  async getMe(request: any) {
+    try {
+      const userAuth = await this.authService.verifyToken(request);
+      if (!userAuth) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      return { userAuth };
+    } catch (error) {
+      Logger.log('error=> get me function ', error);
+      throw error;
+    }
+  }
+
   // get user by Id
   async getUserById(id: number, request: any) {
     try {

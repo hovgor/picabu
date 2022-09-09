@@ -81,4 +81,12 @@ export class TagsService {
       throw error;
     }
   }
+
+  addDefaultTags() {
+    try {
+    } catch (error) {
+      Logger.log('error=> add default tags function ', error);
+      throw error;
+    }
+  }
 }
