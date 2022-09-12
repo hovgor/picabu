@@ -14,7 +14,8 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserValidator } from '../../../shared/validators/user.validator';
 import { client } from 'src/config/config.service.redis';
 import * as securePin from 'secure-pin';
-import mailer from 'src/shared/email/mail.sender';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const mailer = require('../../../shared/email/mail.sender')
 import { HashPassword } from 'src/shared/password-hash/hash.password';
 
 @Injectable()
@@ -144,7 +145,7 @@ export class SettingsService {
         html: `<h1>Your pin code => ${pin}</h1>`,
       };
 
-      const emailSent = await mailer(message);
+      const emailSent = mailer(message);
 
       await client.set(email, pin, {
         EX: 60 * 60 * 24, //a day in seconds

@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { FilterSearchDto } from '../dto/filter.search.dto';
 import { AddTagsDto } from './dto/add.tags.dto';
 import { TagsEntityBase } from './entity/tags.entity';
 
 @Injectable()
-export class TegsService {
+export class TagsService {
   constructor(
     @InjectRepository(TagsEntityBase)
     private tagsRepository: Repository<TagsEntityBase>,
@@ -57,6 +58,34 @@ export class TegsService {
       return id;
     } catch (error) {
       Logger.log('error=> add tags function ', error);
+      throw error;
+    }
+  }
+
+  async gettags(query: FilterSearchDto) {
+    try {
+      const [result, count] = await this.tagsRepository
+        .createQueryBuilder('tags')
+        .limit(query.limit)
+        .offset(query.offset)
+        .orderBy('tags.createdAt', 'DESC')
+        .where(`lower("tags"."name") LIKE lower('${query.beginning || ''}%')`)
+        .getManyAndCount();
+      return {
+        data: { result, count },
+        error: false,
+        message: 'this is a posts',
+      };
+    } catch (error) {
+      Logger.log('error=> get tags function ', error);
+      throw error;
+    }
+  }
+
+  addDefaultTags() {
+    try {
+    } catch (error) {
+      Logger.log('error=> add default tags function ', error);
       throw error;
     }
   }

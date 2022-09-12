@@ -11,7 +11,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { CreateGroupDto } from './dto/create.group.dto';
 import { GroupsService } from './groups.service';
@@ -23,6 +23,11 @@ export class GroupsController {
 
   @UsePipes(new ValidationPipe())
   @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description:
+      'Create groups. to create a group, URL header fields and tags are required, there must be at least three tags, not necessarily nested.',
+  })
   @Post('/')
   async createGroup(
     @Res() res: Response,
@@ -38,6 +43,10 @@ export class GroupsController {
   }
   @UsePipes(new ValidationPipe())
   @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Delete group by ID. ID most be a number.',
+  })
   @Delete(':id')
   async deleteGroup(
     @Param('id', ParseIntPipe) id: number,

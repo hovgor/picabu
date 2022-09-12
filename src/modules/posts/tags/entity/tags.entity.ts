@@ -6,6 +6,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -17,8 +18,12 @@ export class TagsEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: null, nullable: true })
+  @Index('name')
+  @Column({ default: null, nullable: false, unique: true })
   name: string;
+
+  @Column({ default: null, nullable: true })
+  defaultId: number;
 
   @ManyToOne(() => PostsEntityBase, (postEntity) => postEntity.tagsEntity, {
     onDelete: 'CASCADE',

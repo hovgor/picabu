@@ -1,8 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber } from 'class-validator';
+import { IsNumber, IsNotEmpty, IsString } from 'class-validator';
 
 export class FeedDto {
   @ApiProperty()
   @IsNumber()
-  id: number;
+  userId: number;
+}
+
+export class FeedParamsDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  status: string;
 }

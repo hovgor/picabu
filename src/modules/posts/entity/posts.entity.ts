@@ -12,7 +12,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { TagsEntityBase } from '../tegs/entity/tags.entity';
+import { ReactionIconsEntityBase } from '../reaction-icons/entity/reaction.icons.entity';
+import { TagsEntityBase } from '../tags/entity/tags.entity';
 import { UploadFileEntityBase } from '../upload_file/entity/upload_file.entity';
 import { FavoritsEntityBase } from './favorite.post.entity';
 
@@ -60,6 +61,17 @@ export class PostsEntityBase extends BaseEntity {
   })
   @JoinTable()
   tagsEntity: TagsEntityBase[];
+
+  @OneToMany(
+    () => ReactionIconsEntityBase,
+    (reactionIcon) => reactionIcon.postId,
+    {
+      onDelete: 'CASCADE',
+      nullable: true,
+    },
+  )
+  @JoinTable()
+  reactionIconsEntity: ReactionIconsEntityBase[];
 
   @OneToMany(() => FavoritsEntityBase, (tag) => tag.postId, {
     onDelete: 'CASCADE',

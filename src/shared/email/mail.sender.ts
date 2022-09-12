@@ -1,5 +1,4 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-
 const nodemailer = require('nodemailer');
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -20,6 +19,8 @@ const transporter = nodemailer.createTransport(
 );
 
 const mailer = (message) => {
+  console.log(44444, message);
+
   transporter.sendMail(message, (error, info) => {
     if (error) {
       return { success: false, error };
@@ -29,4 +30,4 @@ const mailer = (message) => {
   return true;
 };
 
-export default mailer;
+module.exports = mailer;

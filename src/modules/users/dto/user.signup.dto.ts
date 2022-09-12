@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
+  IsNotEmpty,
   IsString,
   Matches,
   MaxLength,
@@ -9,14 +10,17 @@ import {
 
 export class UserSignUpDto {
   @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   nicname: string;
 
   @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   pinCode: string;
 
   @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   deviceId: string;
 

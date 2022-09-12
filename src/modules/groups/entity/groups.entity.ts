@@ -1,5 +1,5 @@
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
-import { TagsEntityBase } from 'src/modules/posts/tegs/entity/tags.entity';
+import { TagsEntityBase } from 'src/modules/posts/tags/entity/tags.entity';
 import { SubscribeGroupEntityBase } from 'src/modules/users/entity/subscribe.group.entity';
 import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import {

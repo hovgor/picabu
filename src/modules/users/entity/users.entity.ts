@@ -2,6 +2,7 @@ import { AuthEntityBase } from 'src/auth/entity/auth.entity';
 import { CategorieForFavoritsEntityBase } from 'src/modules/categories_for_favorite/entity/categorie.for.favorits.entity';
 import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
+import { ReactionIconsEntityBase } from 'src/modules/posts/reaction-icons/entity/reaction.icons.entity';
 import { UserRoles } from 'src/shared/types/roles';
 import {
   BaseEntity,
@@ -81,6 +82,17 @@ export class UsersEntityBase extends BaseEntity {
   )
   @JoinTable()
   categorieForFavoritesEntity: CategorieForFavoritsEntityBase[];
+
+  @OneToMany(
+    () => ReactionIconsEntityBase,
+    (reactionIcons) => reactionIcons.userId,
+    {
+      onDelete: 'CASCADE',
+      nullable: true,
+    },
+  )
+  @JoinTable()
+  reactionIconsEntity: ReactionIconsEntityBase[];
 
   @OneToMany(() => GroupsEntityBase, (group) => group.user, {
     onDelete: 'CASCADE',

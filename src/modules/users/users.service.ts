@@ -20,6 +20,7 @@ import { GroupsService } from '../groups/groups.service';
 import { GroupsEntityBase } from '../groups/entity/groups.entity';
 import { PostsEntityBase } from '../posts/entity/posts.entity';
 import { UserFollowEntitiyBase } from './entity/user.following.entity';
+import { ReactionsDto } from './dto/reactions.dto';
 
 @Injectable()
 export class UsersService {
@@ -42,7 +43,23 @@ export class UsersService {
     private subscribeGroupRepository: Repository<SubscribeGroupEntityBase>,
     @Inject(GroupsService)
     private readonly groupsService: GroupsService,
+    @InjectRepository(PostsEntityBase)
+    private readonly postRepository: Repository<PostsEntityBase>,
   ) {}
+
+  // get me
+  async getMe(request: any) {
+    try {
+      const userAuth = await this.authService.verifyToken(request);
+      if (!userAuth) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      return { userAuth };
+    } catch (error) {
+      Logger.log('error=> get me function ', error);
+      throw error;
+    }
+  }
 
   // get user by Id
   async getUserById(id: number, request: any) {
@@ -106,7 +123,7 @@ export class UsersService {
   }
 
   //react post
-  async reactPost(body: any, request: any) {
+  async reactPost(body: ReactionsDto, request: any) {
     try {
       const userAuth = await this.authService.verifyToken(request);
       if (!userAuth) {
@@ -345,29 +362,31 @@ export class UsersService {
     }
   }
 
-  async getFeed(status: string, body: any) {
+  async getFeed(param: string, body: any) {
     try {
       let feed;
       const userId = body.id;
-      if (status === 'new') {
+      if (param === 'new') {
         feed = this.postsRepository
           .createQueryBuilder('Posts')
           .orderBy('created_date', 'DESC');
       }
-      if (status === 'top') {
+      if (param === 'top') {
         feed = this.postsRepository
           .createQueryBuilder('Posts')
           .orderBy('rating', 'DESC');
       }
-      if (status === 'myFeed') {
-        const followingsId = this.userFollowRepository
+      //need to maintain--------------------------------------
+      if (param === 'myFeed') {
+        const followings = this.userFollowRepository
           .createQueryBuilder('user_following')
           .where(`user_id = ${userId}`);
         feed = this.postsRepository
           .createQueryBuilder('Posts')
-          .where(`user_id = ${userId}`)
+          .where(`created_by IN ${followings}`)
           .orderBy('created_date', 'DESC');
       }
+      //------------------------------------------------------
       return { data: feed, error: false, message: 'User is unsigned.' };
     } catch (error) {
       Logger.log('error=> subscribe group function ', error);
