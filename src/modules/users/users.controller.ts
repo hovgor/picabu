@@ -141,7 +141,6 @@ export class UsersController {
     @Body() body: FeedDto,
   ) {
     try {
-      console.log(1111111);
       const getFeed = await this.usersService.getFeed(param.status, body);
       return res.status(HttpStatus.ACCEPTED).json(getFeed);
     } catch (error) {

@@ -376,7 +376,8 @@ export class UsersService {
       if (param === 'top') {
         feed = this.postsRepository
           .createQueryBuilder('Posts')
-          .orderBy('rating', `${actual}`, 'DESC');
+          .orderBy('rating', 'DESC')
+          .addOrderBy(`${actual}, 'DESC'`);
       }
       //need to maintain--------------------------------------
       if (param === 'myFeed') {
