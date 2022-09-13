@@ -365,6 +365,8 @@ export class UsersService {
   async getFeed(param: string, body: any) {
     try {
       let feed;
+      let actual = '';
+      if (body.actual === true) actual = 'created_date';
       const userId = body.id;
       if (param === 'new') {
         feed = this.postsRepository
@@ -374,7 +376,7 @@ export class UsersService {
       if (param === 'top') {
         feed = this.postsRepository
           .createQueryBuilder('Posts')
-          .orderBy('rating', 'DESC');
+          .orderBy('rating', `${actual}`, 'DESC');
       }
       //need to maintain--------------------------------------
       if (param === 'myFeed') {
