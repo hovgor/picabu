@@ -400,4 +400,18 @@ export class AuthService {
       throw error;
     }
   }
+
+  // delete user accaunt
+  async deletAccaunt(request: any) {
+    try {
+      const user: UsersEntityBase = await this.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User is not authorized!!!');
+      }
+      await this.usersRepository.delete(user.id);
+    } catch (error) {
+      Logger.log('error=> delete accaunt function ', error);
+      throw error;
+    }
+  }
 }

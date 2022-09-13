@@ -14,6 +14,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { BlockedEntityBase } from './blocked.entity';
 import { SubscribeGroupEntityBase } from './subscribe.group.entity';
 
 @Entity({ schema: 'default', name: 'Users' })
@@ -58,6 +59,13 @@ export class UsersEntityBase extends BaseEntity {
   })
   @JoinTable()
   postEntity: PostsEntityBase[];
+
+  @OneToMany(() => BlockedEntityBase, (blocked) => blocked.blockedUser, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  blockedEntity: BlockedEntityBase[];
 
   @OneToMany(() => SubscribeGroupEntityBase, (user) => user.userId, {
     onDelete: 'CASCADE',

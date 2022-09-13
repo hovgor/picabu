@@ -19,12 +19,15 @@ import { GroupsService } from '../groups/groups.service';
 import { GroupsEntityBase } from '../groups/entity/groups.entity';
 import { ReactionsDto } from './dto/reactions.dto';
 import { PostsEntityBase } from '../posts/entity/posts.entity';
+import { BlockedEntityBase } from './entity/blocked.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UsersEntityBase)
     private usersRepository: Repository<UsersEntityBase>,
+    @InjectRepository(BlockedEntityBase)
+    private blockedListRepository: Repository<BlockedEntityBase>,
     @InjectRepository(ReactionsEntityBase)
     private reactionsRepository: Repository<ReactionsEntityBase>,
     @Inject(forwardRef(() => AuthService))
@@ -40,20 +43,6 @@ export class UsersService {
     @InjectRepository(PostsEntityBase)
     private readonly postRepository: Repository<PostsEntityBase>,
   ) {}
-
-  // get me
-  async getMe(request: any) {
-    try {
-      const userAuth = await this.authService.verifyToken(request);
-      if (!userAuth) {
-        throw new UnauthorizedException('User not authorized!!!');
-      }
-      return { userAuth };
-    } catch (error) {
-      Logger.log('error=> get me function ', error);
-      throw error;
-    }
-  }
 
   // get user by Id
   async getUserById(id: number, request: any) {
@@ -320,6 +309,78 @@ export class UsersService {
       return { data: null, error: false, message: 'User is unsigned.' };
     } catch (error) {
       Logger.log('error=> subscribe group function ', error);
+      throw error;
+    }
+  }
+
+  // blocked user
+  async toBlockedUser(blockedUserId: number, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      //blockedListRepository
+      const blocking = await this.blockedListRepository.save(
+        this.blockedListRepository.create({
+          blockingUserId: user.id,
+          blockedUser: blockedUserId,
+        }),
+      );
+      return {
+        data: blocking,
+        error: false,
+        message: `user ${user.nicname} bloked user whit ${blockedUserId} id!`,
+      };
+    } catch (error) {
+      Logger.log('error=> blocked user function ', error);
+      throw error;
+    }
+  }
+
+  // unblock user
+  async toUnBlockedUser(unblockedUserId: number, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      await this.blockedListRepository
+        .createQueryBuilder()
+        .delete()
+        .from(BlockedEntityBase)
+        .where('blockingUserId = :blockingUserId', { blockingUserId: user.id })
+        .andWhere('blockedUser = :blockedUser', {
+          blockedUser: unblockedUserId,
+        })
+        .execute();
+      return {
+        data: null,
+        error: false,
+        message: `user ${user.nicname} unbloked user whit ${unblockedUserId} id!`,
+      };
+    } catch (error) {
+      Logger.log('error=> unblocked user function ', error);
+      throw error;
+    }
+  }
+
+  // get my blocked list
+  async getBlockedList(request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const blockedList = await this.blockedListRepository.find({
+        where: { blockingUserId: user.id },
+      });
+
+      console.log(blockedList);
+
+      return blockedList;
+    } catch (error) {
+      Logger.log('get blocked list function ', error);
       throw error;
     }
   }

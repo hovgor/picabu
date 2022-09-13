@@ -22,7 +22,7 @@ import { FilterSearchDto } from './dto/filter.search.dto';
 import { ReactionTypeForPostDto } from './dto/reaction.type.dto';
 import { PostsService } from './posts.service';
 import { ReactionIconsService } from './reaction-icons/reaction-icons.service';
-import { TagsService } from './tags/tags.service';
+import { TagsService } from '../tags/tags.service';
 
 @Controller('posts')
 @ApiTags('Posts')
@@ -130,7 +130,6 @@ export class PostsController {
   }
 
   @UsePipes(new ValidationPipe())
-  // @ApiBearerAuth()
   @ApiResponse({
     status: HttpStatus.OK,
     description:
@@ -186,8 +185,8 @@ export class PostsController {
     @Query() query: FilterSearchDto,
   ) {
     try {
-      const search = await this.postsService.searchByTagsPost(query, req);
-      return res.status(HttpStatus.OK).json(search);
+      // const search = await this.postsService.searchByTagsPost(query, req);
+      // return res.status(HttpStatus.OK).json(search);
     } catch (error) {
       throw error;
     }

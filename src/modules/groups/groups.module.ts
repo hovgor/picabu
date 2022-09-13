@@ -1,14 +1,23 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
-import { TagsEntityBase } from '../posts/tags/entity/tags.entity';
 import { GroupsEntityBase } from './entity/groups.entity';
 import { GroupsController } from './groups.controller';
 import { GroupsService } from './groups.service';
-import { TagsService } from '../posts/tags/tags.service';
+import { TagsService } from '../tags/tags.service';
+import { TagsModule } from '../tags/tags.module';
+import { TagsPostEntityBase } from '../tags/entity/tags.for.posts.entity';
+import { TagsNameEntityBase } from '../tags/entity/tags.name.entity';
+import { TagsGroupEntityBase } from '../tags/entity/tags.for.group.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([GroupsEntityBase, TagsEntityBase]),
+    TypeOrmModule.forFeature([
+      GroupsEntityBase,
+      TagsPostEntityBase,
+      TagsNameEntityBase,
+      TagsGroupEntityBase,
+    ]),
+    forwardRef(() => TagsModule),
     AuthModule,
   ],
   controllers: [GroupsController],

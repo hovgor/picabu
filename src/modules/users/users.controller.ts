@@ -15,6 +15,7 @@ import { ReactionsDto } from './dto/reactions.dto';
 import { UsersService } from './users.service';
 import { CommentDto } from './dto/comment.dto';
 import { CommentsReactionsDto } from './dto/comments.reactions.dto';
+import { BlockedUserDto } from './dto/blocked.user.dto';
 @Controller('users')
 @ApiTags('Users')
 export class UsersController {
@@ -65,6 +66,53 @@ export class UsersController {
     }
   }
 
+  // blocked user
+  @ApiBearerAuth()
+  @Post('/blockedUser')
+  async blockedUser(
+    @Body() body: BlockedUserDto,
+    @Res() res: Response,
+    @Req() req: any,
+  ) {
+    try {
+      const data = await this.usersService.toBlockedUser(body.userId, req);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // unblocked user
+  @ApiBearerAuth()
+  @Post('/unblockedUser')
+  async unBlockedUser(
+    @Body() body: BlockedUserDto,
+    @Res() res: Response,
+    @Req() req: any,
+  ) {
+    try {
+      const data = await this.usersService.toUnBlockedUser(body.userId, req);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // get all blocked users
+  @ApiBearerAuth()
+  @Get('/getBlockedUsers')
+  async getBlockedUsers(
+    // @Body() body: BlockedUserDto,
+    @Res() res: Response,
+    @Req() req: any,
+  ) {
+    try {
+      const data = await this.usersService.getBlockedList(req);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
   @ApiBearerAuth()
   @Post('/reactUnreactComment')
   async reactUnreactComment(
@@ -105,32 +153,6 @@ export class UsersController {
     try {
       const subscribe = await this.usersService.unsignedGroup(groupId, req);
       return res.status(HttpStatus.ACCEPTED).json(subscribe);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @ApiBearerAuth()
-  @Get('/me')
-  async getMe(@Res() res: Response, @Req() req: any) {
-    try {
-      const user = await this.usersService.getMe(req);
-      res.status(HttpStatus.OK).json(user);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @ApiBearerAuth()
-  @Get(':id')
-  async getUserById(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-    @Req() req: any,
-  ) {
-    try {
-      const user = await this.usersService.getUserById(id, req);
-      res.status(HttpStatus.OK).json(user);
     } catch (error) {
       throw error;
     }

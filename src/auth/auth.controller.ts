@@ -114,4 +114,19 @@ export class AuthController {
       throw error;
     }
   }
+
+  @ApiBearerAuth()
+  @Delete('deleteAccount')
+  @ApiResponse({
+    status: HttpStatus.RESET_CONTENT,
+    description: 'Delete account.',
+  })
+  async deleteAccount(@Req() req: any, @Res() res: Response) {
+    try {
+      await this.authService.deletAccaunt(req);
+      return res.status(HttpStatus.NO_CONTENT).json();
+    } catch (error) {
+      throw error;
+    }
+  }
 }

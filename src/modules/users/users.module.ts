@@ -12,6 +12,7 @@ import { CommentsReactionsEntityBase } from './entity/comments.reactions.entity'
 import { SubscribeGroupEntityBase } from './entity/subscribe.group.entity';
 import { GroupsModule } from '../groups/groups.module';
 import { PostsEntityBase } from '../posts/entity/posts.entity';
+import { BlockedEntityBase } from './entity/blocked.entity';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PostsEntityBase } from '../posts/entity/posts.entity';
       CommentsReactionsEntityBase,
       SubscribeGroupEntityBase,
       PostsEntityBase,
+      BlockedEntityBase,
     ]),
     forwardRef(() => AuthModule),
     GroupsModule,
