@@ -9,6 +9,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinTable,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -31,7 +32,8 @@ export class UsersEntityBase extends BaseEntity {
   @Column({ default: null, nullable: true })
   password: string;
 
-  @Column({ default: null, nullable: true })
+  @Index('createWhitNicname')
+  @Column({ default: null, nullable: true, unique: true })
   nicname: string;
 
   @Column({ default: 'local', nullable: false })

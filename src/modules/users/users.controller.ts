@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Req,
   Res,
@@ -16,6 +17,7 @@ import { UsersService } from './users.service';
 import { CommentDto } from './dto/comment.dto';
 import { CommentsReactionsDto } from './dto/comments.reactions.dto';
 import { BlockedUserDto } from './dto/blocked.user.dto';
+import { EditProfileDto } from './dto/edit.profile.dto';
 @Controller('users')
 @ApiTags('Users')
 export class UsersController {
@@ -153,6 +155,21 @@ export class UsersController {
     try {
       const subscribe = await this.usersService.unsignedGroup(groupId, req);
       return res.status(HttpStatus.ACCEPTED).json(subscribe);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Patch('editProfile')
+  async editeProfile(
+    @Body() body: EditProfileDto,
+    @Req() req: any,
+    @Res() res: Response,
+  ) {
+    try {
+      const editing = await this.usersService.editProfile(body, req);
+      return res.status(HttpStatus.ACCEPTED).json(editing);
     } catch (error) {
       throw error;
     }
