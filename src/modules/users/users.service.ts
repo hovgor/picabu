@@ -21,12 +21,17 @@ import { GroupsEntityBase } from '../groups/entity/groups.entity';
 import { PostsEntityBase } from '../posts/entity/posts.entity';
 import { UserFollowEntitiyBase } from './entity/user.following.entity';
 import { ReactionsDto } from './dto/reactions.dto';
+import { UserValidator } from 'src/shared/validators/user.validator';
+import { BlockedEntityBase } from './entity/blocked.entity';
+import { EditProfileDto } from './dto/edit.profile.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UsersEntityBase)
     private usersRepository: Repository<UsersEntityBase>,
+    @InjectRepository(BlockedEntityBase)
+    private blockedListRepository: Repository<BlockedEntityBase>,
     @InjectRepository(ReactionsEntityBase)
     private postsReactionRepository: Repository<ReactionsEntityBase>,
     @InjectRepository(PostsEntityBase)
@@ -45,6 +50,7 @@ export class UsersService {
     private readonly groupsService: GroupsService,
     @InjectRepository(PostsEntityBase)
     private readonly postRepository: Repository<PostsEntityBase>,
+    private readonly userValidator: UserValidator,
   ) {}
 
   // get me
@@ -393,6 +399,108 @@ export class UsersService {
       return { data: feed, error: false, message: 'User is unsigned.' };
     } catch (error) {
       Logger.log('error=> subscribe group function ', error);
+      throw error;
+    }
+  }
+
+  // new pushing --------------
+
+  // blocked user
+  async toBlockedUser(blockedUserId: number, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      //blockedListRepository
+      const blocking = await this.blockedListRepository.save(
+        this.blockedListRepository.create({
+          blockingUserId: user.id,
+          blockedUser: blockedUserId,
+        }),
+      );
+      return {
+        data: blocking,
+        error: false,
+        message: `user ${user.nicname} bloked user whit ${blockedUserId} id!`,
+      };
+    } catch (error) {
+      Logger.log('error=> blocked user function ', error);
+      throw error;
+    }
+  }
+
+  // unblock user
+  async toUnBlockedUser(unblockedUserId: number, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      await this.blockedListRepository
+        .createQueryBuilder()
+        .delete()
+        .from(BlockedEntityBase)
+        .where('blockingUserId = :blockingUserId', { blockingUserId: user.id })
+        .andWhere('blockedUser = :blockedUser', {
+          blockedUser: unblockedUserId,
+        })
+        .execute();
+      return {
+        data: null,
+        error: false,
+        message: `user ${user.nicname} unbloked user whit ${unblockedUserId} id!`,
+      };
+    } catch (error) {
+      Logger.log('error=> unblocked user function ', error);
+      throw error;
+    }
+  }
+
+  // get my blocked list
+  async getBlockedList(request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const blockedList = await this.blockedListRepository.find({
+        where: { blockingUserId: user.id },
+      });
+
+      console.log(blockedList);
+
+      return blockedList;
+    } catch (error) {
+      Logger.log('get blocked list function ', error);
+      throw error;
+    }
+  }
+
+  // edit profile
+  async editProfile(data: EditProfileDto, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const nicname = this.userValidator.userNicname(data.nicname);
+      if (!nicname) {
+        Logger.log('error=> nicname is not defined!!!');
+        throw new BadRequestException('Nicname not exist!!!');
+      }
+      const validNicname = await this.usersRepository.findOne({
+        where: { nicname: nicname },
+      });
+      if (validNicname && validNicname.nicname !== user.nicname) {
+        throw new BadRequestException('this nicname already exist!!!');
+      }
+      if (!validNicname) {
+        await this.usersRepository.update({ id: user.id }, { nicname });
+      }
+      return { data: nicname, error: false, message: 'Nicname updated.' };
+    } catch (error) {
+      Logger.log('error=> edit profile function ', error);
       throw error;
     }
   }

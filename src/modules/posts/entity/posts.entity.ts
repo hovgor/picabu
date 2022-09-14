@@ -13,7 +13,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ReactionIconsEntityBase } from '../reaction-icons/entity/reaction.icons.entity';
-import { TagsEntityBase } from '../tags/entity/tags.entity';
+import { TagsPostEntityBase } from 'src/modules/tags/entity/tags.for.posts.entity';
 import { UploadFileEntityBase } from '../upload_file/entity/upload_file.entity';
 import { FavoritsEntityBase } from './favorite.post.entity';
 
@@ -31,7 +31,7 @@ export class PostsEntityBase extends BaseEntity {
   @Column({ default: null, nullable: true })
   attachment: string;
 
-  @Column({ default: 0, nullable: false })
+  @Column({ default: 0, nullable: true })
   rating: number;
 
   @ManyToOne(() => UsersEntityBase, (user) => user.postEntity, {
@@ -55,12 +55,12 @@ export class PostsEntityBase extends BaseEntity {
   @JoinTable()
   uploadFileEntity: UploadFileEntityBase[];
 
-  @OneToMany(() => TagsEntityBase, (tag) => tag.postId, {
+  @OneToMany(() => TagsPostEntityBase, (tag) => tag.post, {
     onDelete: 'CASCADE',
     nullable: true,
   })
   @JoinTable()
-  tagsEntity: TagsEntityBase[];
+  tagsEntity: TagsPostEntityBase[];
 
   @OneToMany(
     () => ReactionIconsEntityBase,

@@ -15,6 +15,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { SubscribeGroupEntityBase } from './subscribe.group.entity';
+import { BlockedEntityBase } from './blocked.entity';
 
 @Entity({ schema: 'default', name: 'Users' })
 export class UsersEntityBase extends BaseEntity {
@@ -50,6 +51,13 @@ export class UsersEntityBase extends BaseEntity {
 
   @Column({ default: null, nullable: true })
   role: UserRoles;
+
+  @OneToMany(() => BlockedEntityBase, (blocked) => blocked.blockedUser, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  blockedEntity: BlockedEntityBase[];
 
   @OneToMany(() => AuthEntityBase, (auth) => auth.userId, {
     onDelete: 'CASCADE',

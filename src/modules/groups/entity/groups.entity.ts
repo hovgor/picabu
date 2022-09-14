@@ -1,5 +1,5 @@
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
-import { TagsEntityBase } from 'src/modules/posts/tags/entity/tags.entity';
+import { TagsGroupEntityBase } from 'src/modules/tags/entity/tags.for.group.entity';
 import { SubscribeGroupEntityBase } from 'src/modules/users/entity/subscribe.group.entity';
 import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import {
@@ -45,12 +45,12 @@ export class GroupsEntityBase extends BaseEntity {
   @Column({ default: null, nullable: true })
   attachment: string;
 
-  @OneToMany(() => TagsEntityBase, (tag) => tag.groupId, {
+  @OneToMany(() => TagsGroupEntityBase, (tag) => tag.group, {
     onDelete: 'CASCADE',
     nullable: true,
   })
   @JoinTable()
-  tagsEntity: TagsEntityBase[];
+  tagsEntity: TagsGroupEntityBase[];
 
   @OneToMany(() => PostsEntityBase, (post) => post.groupId, {
     onDelete: 'CASCADE',
