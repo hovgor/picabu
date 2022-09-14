@@ -11,6 +11,11 @@ import { CommentsEntityBase } from './entity/comments.entity';
 import { CommentsReactionsEntityBase } from './entity/comments.reactions.entity';
 import { SubscribeGroupEntityBase } from './entity/subscribe.group.entity';
 import { GroupsModule } from '../groups/groups.module';
+import { SettingsService } from './settings/settings.service';
+import { settingsController } from './settings/settings.controller';
+import { ProvidersService } from 'src/auth/passwordLess/providers.service';
+import { ProvidersController } from 'src/auth/passwordLess/providers.controller';
+import { UserFollowEntitiyBase } from './entity/user.following.entity';
 import { PostsEntityBase } from '../posts/entity/posts.entity';
 import { BlockedEntityBase } from './entity/blocked.entity';
 
@@ -23,14 +28,21 @@ import { BlockedEntityBase } from './entity/blocked.entity';
       ReactionsEntityBase,
       CommentsReactionsEntityBase,
       SubscribeGroupEntityBase,
+      UserFollowEntitiyBase,
       PostsEntityBase,
       BlockedEntityBase,
     ]),
     forwardRef(() => AuthModule),
     GroupsModule,
   ],
-  providers: [UsersService, UserValidator, HashPassword],
-  controllers: [UsersController],
-  exports: [UsersService],
+  providers: [
+    UsersService,
+    UserValidator,
+    HashPassword,
+    ProvidersService,
+    SettingsService,
+  ],
+  controllers: [UsersController, settingsController, ProvidersController],
+  exports: [UsersService, SettingsService, ProvidersService],
 })
 export class UsersModule {}

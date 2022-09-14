@@ -32,8 +32,8 @@ export class PostsEntityBase extends BaseEntity {
   @Column({ default: null, nullable: true })
   attachment: string;
 
-  @Column({ default: null, nullable: true })
-  like: number;
+  @Column({ default: 0, nullable: false })
+  rating: number;
 
   @ManyToOne(() => UsersEntityBase, (user) => user.postEntity, {
     onDelete: 'CASCADE',

@@ -19,6 +19,8 @@ const transporter = nodemailer.createTransport(
 );
 
 const mailer = (message) => {
+  console.log(44444, message);
+
   transporter.sendMail(message, (error, info) => {
     if (error) {
       return { success: false, error };

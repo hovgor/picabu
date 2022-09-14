@@ -18,6 +18,9 @@ import { CommentDto } from './dto/comment.dto';
 import { CommentsReactionsDto } from './dto/comments.reactions.dto';
 import { BlockedUserDto } from './dto/blocked.user.dto';
 import { EditProfileDto } from './dto/edit.profile.dto';
+import { FeedDto, FeedParamsDto } from './dto/feed.dto';
+import { followUnfollowDto } from './dto/follow.unfollow.dto';
+
 @Controller('users')
 @ApiTags('Users')
 export class UsersController {
@@ -164,6 +167,45 @@ export class UsersController {
   @Patch('editProfile')
   async editeProfile(
     @Body() body: EditProfileDto,
+  @Post('/followUnfollowUser')
+  async followUnfollowUser(
+    @Req() req: any,
+    @Res() res: Response,
+    @Body() body: followUnfollowDto,
+  ) {
+    try {
+      const userId = body.userId;
+      const followToId = body.followToId;
+      const data = body.userFollowsAccount
+        ? await this.usersService.unfollowUser(userId, followToId)
+        : await this.usersService.followUser(userId, followToId);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Get('/feed/:status')
+  async getFeed(
+    @Param('status') param: FeedParamsDto,
+    @Req() req: any,
+    @Res() res: Response,
+    @Body() body: FeedDto,
+  ) {
+    try {
+      const getFeed = await this.usersService.getFeed(param.status, body);
+      return res.status(HttpStatus.ACCEPTED).json(getFeed);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Get(':id')
+  async getUserById(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
     @Req() req: any,
     @Res() res: Response,
   ) {

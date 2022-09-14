@@ -235,8 +235,11 @@ export class AuthService {
   async emailVerifyWhitMail(email: string) {
     try {
       const pin = securePin.generatePinSync(6);
+      console.log(11111, pin);
 
       const verifyEmail = this.userValidator.userEmail(email);
+      console.log(222222, verifyEmail);
+
       if (!verifyEmail) {
         Logger.log('error => email is not defined!!');
         throw new BadRequestException('email is not defined!!!');
@@ -249,7 +252,10 @@ export class AuthService {
       };
       client.set(verifyEmail, pin);
       client.expire(verifyEmail, 60 * 60);
+      console.log(5, message);
       const sendEmail = mailer(message);
+      console.log(3333, sendEmail);
+
       if (sendEmail) {
         return {
           data: null,

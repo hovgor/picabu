@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   forwardRef,
   Inject,
   Injectable,
@@ -17,11 +18,12 @@ import { CommentsReactionsEntityBase } from './entity/comments.reactions.entity'
 import { SubscribeGroupEntityBase } from './entity/subscribe.group.entity';
 import { GroupsService } from '../groups/groups.service';
 import { GroupsEntityBase } from '../groups/entity/groups.entity';
-import { ReactionsDto } from './dto/reactions.dto';
 import { PostsEntityBase } from '../posts/entity/posts.entity';
 import { UserValidator } from 'src/shared/validators/user.validator';
 import { BlockedEntityBase } from './entity/blocked.entity';
 import { EditProfileDto } from './dto/edit.profile.dto';
+import { UserFollowEntitiyBase } from './entity/user.following.entity';
+import { ReactionsDto } from './dto/reactions.dto';
 
 @Injectable()
 export class UsersService {
@@ -31,7 +33,9 @@ export class UsersService {
     @InjectRepository(BlockedEntityBase)
     private blockedListRepository: Repository<BlockedEntityBase>,
     @InjectRepository(ReactionsEntityBase)
-    private reactionsRepository: Repository<ReactionsEntityBase>,
+    private postsReactionRepository: Repository<ReactionsEntityBase>,
+    @InjectRepository(PostsEntityBase)
+    private postsRepository: Repository<PostsEntityBase>,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
     @InjectRepository(CommentsEntityBase)
@@ -39,6 +43,8 @@ export class UsersService {
     @InjectRepository(CommentsReactionsEntityBase)
     private commentReactionRepository: Repository<CommentsReactionsEntityBase>,
     @InjectRepository(SubscribeGroupEntityBase)
+    private userFollowRepository: Repository<UserFollowEntitiyBase>,
+    @InjectRepository(UserFollowEntitiyBase)
     private subscribeGroupRepository: Repository<SubscribeGroupEntityBase>,
     @Inject(GroupsService)
     private readonly groupsService: GroupsService,
@@ -115,16 +121,9 @@ export class UsersService {
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
-      const post = await this.postRepository.findOne({
-        where: { id: body.postId },
-      });
-      if (!post) {
-        throw new NotFoundException('Post is not defined!!!');
-      }
-
-      const { postId, reactionType } = body;
-      const ifReacted = await this.reactionsRepository.findOne({
-        where: { user_id: userAuth.id },
+      const { userId, postId, reactionType } = body;
+      const ifReacted = await this.postsReactionRepository.findOne({
+        where: { user_id: userId },
       });
       if (ifReacted !== null) {
         if (ifReacted.reaction_type == reactionType) {
@@ -135,20 +134,19 @@ export class UsersService {
           };
         }
       }
-      const reacted = await this.reactionsRepository.upsert(
-        { user_id: userAuth.id, post_id: postId, reaction_type: reactionType },
+      // const data = { userId, postId, reactionType };
+      const reacted = await this.postsReactionRepository.upsert(
+        { user_id: userId, post_id: postId, reaction_type: reactionType },
         {
           conflictPaths: ['user_id', 'post_id'],
           skipUpdateIfNoValuesChanged: true,
         },
       );
+      const reactionsCount = await this.postsRepository
+        .createQueryBuilder()
+        .update(this.postsRepository)
+        .set({ rating: () => `rating + ${reactionType}` });
       if (!reacted) throw new Error('Reaction was not Counted');
-      let count = post.like;
-      count += body.reactionType;
-      await this.postRepository.update({ id: postId }, { like: count });
-      if (post.like === -100) {
-        await this.postRepository.delete(postId);
-      }
       return reacted;
     } catch (error) {
       Logger.log('error=> react post function!!', error);
@@ -337,10 +335,26 @@ export class UsersService {
       };
     } catch (error) {
       Logger.log('error=> blocked user function ', error);
+  async unfollowUser(userId: number, followToId: number) {
+    try {
+      const unFollowed = this.userFollowRepository
+        .createQueryBuilder()
+        .delete()
+        .where(`userId = ${userId} && followToId = ${followToId}`)
+        .execute();
+      if (!unFollowed) {
+        return {
+          data: null,
+          error: false,
+          message: "User doesn't follow to user you want to unfollow from",
+        };
+      }
+      return { data: null, error: false, message: 'Successfully Unfollowed' };
+    } catch (error) {
+      Logger.log('error=> subscribe group function ', error);
       throw error;
     }
   }
-
   // unblock user
   async toUnBlockedUser(unblockedUserId: number, request: any) {
     try {
@@ -384,6 +398,21 @@ export class UsersService {
       return blockedList;
     } catch (error) {
       Logger.log('get blocked list function ', error);
+  async followUser(userId: number, followToId: number) {
+    try {
+      const followUser = this.userFollowRepository.save(
+        this.userFollowRepository.create({
+          user_id: userId,
+          follow_to_id: followToId,
+        }),
+      );
+      return {
+        data: followUser,
+        error: false,
+        message: 'Successfully Followed',
+      };
+    } catch (error) {
+      Logger.log('error=> subscribe group function ', error);
       throw error;
     }
   }
@@ -412,6 +441,37 @@ export class UsersService {
       return { data: nicname, error: false, message: 'Nicname updated.' };
     } catch (error) {
       Logger.log('error=> edit profile function ', error);
+  async getFeed(param: string, body: any) {
+    try {
+      let feed;
+      let actual = '';
+      if (body.actual === true) actual = 'created_date';
+      const userId = body.id;
+      if (param === 'new') {
+        feed = this.postsRepository
+          .createQueryBuilder('Posts')
+          .orderBy('created_date', 'DESC');
+      }
+      if (param === 'top') {
+        feed = this.postsRepository
+          .createQueryBuilder('Posts')
+          .orderBy('rating', 'DESC')
+          .addOrderBy(`${actual}, 'DESC'`);
+      }
+      //need to maintain--------------------------------------
+      if (param === 'myFeed') {
+        const followings = this.userFollowRepository
+          .createQueryBuilder('user_following')
+          .where(`user_id = ${userId}`);
+        feed = this.postsRepository
+          .createQueryBuilder('Posts')
+          .where(`created_by IN ${followings}`)
+          .orderBy('created_date', 'DESC');
+      }
+      //------------------------------------------------------
+      return { data: feed, error: false, message: 'User is unsigned.' };
+    } catch (error) {
+      Logger.log('error=> subscribe group function ', error);
       throw error;
     }
   }

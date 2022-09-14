@@ -14,12 +14,13 @@ import { FavoritsEntityBase } from 'src/modules/posts/entity/favorite.post.entit
 import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
 import { CommentsEntityBase } from 'src/modules/users/entity/comments.entity';
 import { SubscribeGroupEntityBase } from 'src/modules/users/entity/subscribe.group.entity';
+import { UserFollowEntitiyBase } from 'src/modules/users/entity/user.following.entity';
 import { ReactionIconsEntityBase } from 'src/modules/posts/reaction-icons/entity/reaction.icons.entity';
+
 import { TagsNameEntityBase } from 'src/modules/tags/entity/tags.name.entity';
 import { TagsPostEntityBase } from 'src/modules/tags/entity/tags.for.posts.entity';
 import { TagsGroupEntityBase } from 'src/modules/tags/entity/tags.for.group.entity';
 import { BlockedEntityBase } from 'src/modules/users/entity/blocked.entity';
-// import { ReplyCommentsEntityBase } from 'src/modules/users/entity/';
 
 @Injectable()
 export class DatabaseConfigService implements TypeOrmOptionsFactory {
@@ -58,6 +59,7 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
         GroupsEntityBase,
         CommentsEntityBase,
         SubscribeGroupEntityBase,
+        UserFollowEntitiyBase,
         ReactionIconsEntityBase,
         TagsPostEntityBase,
         TagsGroupEntityBase,
