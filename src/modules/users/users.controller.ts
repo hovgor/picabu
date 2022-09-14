@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Req,
   Res,
@@ -15,6 +16,8 @@ import { ReactionsDto } from './dto/reactions.dto';
 import { UsersService } from './users.service';
 import { CommentDto } from './dto/comment.dto';
 import { CommentsReactionsDto } from './dto/comments.reactions.dto';
+import { BlockedUserDto } from './dto/blocked.user.dto';
+import { EditProfileDto } from './dto/edit.profile.dto';
 import { FeedDto, FeedParamsDto } from './dto/feed.dto';
 import { followUnfollowDto } from './dto/follow.unfollow.dto';
 
@@ -68,6 +71,53 @@ export class UsersController {
     }
   }
 
+  // blocked user
+  @ApiBearerAuth()
+  @Post('/blockedUser')
+  async blockedUser(
+    @Body() body: BlockedUserDto,
+    @Res() res: Response,
+    @Req() req: any,
+  ) {
+    try {
+      const data = await this.usersService.toBlockedUser(body.userId, req);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // unblocked user
+  @ApiBearerAuth()
+  @Post('/unblockedUser')
+  async unBlockedUser(
+    @Body() body: BlockedUserDto,
+    @Res() res: Response,
+    @Req() req: any,
+  ) {
+    try {
+      const data = await this.usersService.toUnBlockedUser(body.userId, req);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // get all blocked users
+  @ApiBearerAuth()
+  @Get('/getBlockedUsers')
+  async getBlockedUsers(
+    // @Body() body: BlockedUserDto,
+    @Res() res: Response,
+    @Req() req: any,
+  ) {
+    try {
+      const data = await this.usersService.getBlockedList(req);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
   @ApiBearerAuth()
   @Post('/reactUnreactComment')
   async reactUnreactComment(
@@ -114,6 +164,9 @@ export class UsersController {
   }
 
   @ApiBearerAuth()
+  @Patch('editProfile')
+  async editeProfile(
+    @Body() body: EditProfileDto,
   @Post('/followUnfollowUser')
   async followUnfollowUser(
     @Req() req: any,
@@ -154,10 +207,11 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
     @Req() req: any,
+    @Res() res: Response,
   ) {
     try {
-      const user = await this.usersService.getUserById(id, req);
-      res.status(HttpStatus.OK).json(user);
+      const editing = await this.usersService.editProfile(body, req);
+      return res.status(HttpStatus.ACCEPTED).json(editing);
     } catch (error) {
       throw error;
     }

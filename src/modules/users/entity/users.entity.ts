@@ -9,11 +9,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinTable,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { BlockedEntityBase } from './blocked.entity';
 import { SubscribeGroupEntityBase } from './subscribe.group.entity';
 
 @Entity({ schema: 'default', name: 'Users' })
@@ -30,7 +32,8 @@ export class UsersEntityBase extends BaseEntity {
   @Column({ default: null, nullable: true })
   password: string;
 
-  @Column({ default: null, nullable: true })
+  @Index('createWhitNicname')
+  @Column({ default: null, nullable: true, unique: true })
   nicname: string;
 
   @Column({ default: null, nullable: true })
@@ -64,6 +67,13 @@ export class UsersEntityBase extends BaseEntity {
   })
   @JoinTable()
   postEntity: PostsEntityBase[];
+
+  @OneToMany(() => BlockedEntityBase, (blocked) => blocked.blockedUser, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  blockedEntity: BlockedEntityBase[];
 
   @OneToMany(() => SubscribeGroupEntityBase, (user) => user.userId, {
     onDelete: 'CASCADE',

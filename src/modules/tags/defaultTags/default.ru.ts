@@ -1,4 +1,4 @@
-export const defaultTags = [
+export const defaultRuTags = [
   'Природа',
   'Красота',
   'Счастье',

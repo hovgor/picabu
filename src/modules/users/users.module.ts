@@ -17,6 +17,7 @@ import { ProvidersService } from 'src/auth/passwordLess/providers.service';
 import { ProvidersController } from 'src/auth/passwordLess/providers.controller';
 import { UserFollowEntitiyBase } from './entity/user.following.entity';
 import { PostsEntityBase } from '../posts/entity/posts.entity';
+import { BlockedEntityBase } from './entity/blocked.entity';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PostsEntityBase } from '../posts/entity/posts.entity';
       SubscribeGroupEntityBase,
       UserFollowEntitiyBase,
       PostsEntityBase,
+      BlockedEntityBase,
     ]),
     forwardRef(() => AuthModule),
     GroupsModule,

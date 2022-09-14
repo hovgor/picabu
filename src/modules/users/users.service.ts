@@ -19,6 +19,9 @@ import { SubscribeGroupEntityBase } from './entity/subscribe.group.entity';
 import { GroupsService } from '../groups/groups.service';
 import { GroupsEntityBase } from '../groups/entity/groups.entity';
 import { PostsEntityBase } from '../posts/entity/posts.entity';
+import { UserValidator } from 'src/shared/validators/user.validator';
+import { BlockedEntityBase } from './entity/blocked.entity';
+import { EditProfileDto } from './dto/edit.profile.dto';
 import { UserFollowEntitiyBase } from './entity/user.following.entity';
 import { ReactionsDto } from './dto/reactions.dto';
 
@@ -27,6 +30,8 @@ export class UsersService {
   constructor(
     @InjectRepository(UsersEntityBase)
     private usersRepository: Repository<UsersEntityBase>,
+    @InjectRepository(BlockedEntityBase)
+    private blockedListRepository: Repository<BlockedEntityBase>,
     @InjectRepository(ReactionsEntityBase)
     private postsReactionRepository: Repository<ReactionsEntityBase>,
     @InjectRepository(PostsEntityBase)
@@ -45,21 +50,8 @@ export class UsersService {
     private readonly groupsService: GroupsService,
     @InjectRepository(PostsEntityBase)
     private readonly postRepository: Repository<PostsEntityBase>,
+    private readonly userValidator: UserValidator,
   ) {}
-
-  // get me
-  async getMe(request: any) {
-    try {
-      const userAuth = await this.authService.verifyToken(request);
-      if (!userAuth) {
-        throw new UnauthorizedException('User not authorized!!!');
-      }
-      return { userAuth };
-    } catch (error) {
-      Logger.log('error=> get me function ', error);
-      throw error;
-    }
-  }
 
   // get user by Id
   async getUserById(id: number, request: any) {
@@ -322,6 +314,27 @@ export class UsersService {
     }
   }
 
+  // blocked user
+  async toBlockedUser(blockedUserId: number, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      //blockedListRepository
+      const blocking = await this.blockedListRepository.save(
+        this.blockedListRepository.create({
+          blockingUserId: user.id,
+          blockedUser: blockedUserId,
+        }),
+      );
+      return {
+        data: blocking,
+        error: false,
+        message: `user ${user.nicname} bloked user whit ${blockedUserId} id!`,
+      };
+    } catch (error) {
+      Logger.log('error=> blocked user function ', error);
   async unfollowUser(userId: number, followToId: number) {
     try {
       const unFollowed = this.userFollowRepository
@@ -342,7 +355,49 @@ export class UsersService {
       throw error;
     }
   }
+  // unblock user
+  async toUnBlockedUser(unblockedUserId: number, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      await this.blockedListRepository
+        .createQueryBuilder()
+        .delete()
+        .from(BlockedEntityBase)
+        .where('blockingUserId = :blockingUserId', { blockingUserId: user.id })
+        .andWhere('blockedUser = :blockedUser', {
+          blockedUser: unblockedUserId,
+        })
+        .execute();
+      return {
+        data: null,
+        error: false,
+        message: `user ${user.nicname} unbloked user whit ${unblockedUserId} id!`,
+      };
+    } catch (error) {
+      Logger.log('error=> unblocked user function ', error);
+      throw error;
+    }
+  }
 
+  // get my blocked list
+  async getBlockedList(request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const blockedList = await this.blockedListRepository.find({
+        where: { blockingUserId: user.id },
+      });
+
+      console.log(blockedList);
+
+      return blockedList;
+    } catch (error) {
+      Logger.log('get blocked list function ', error);
   async followUser(userId: number, followToId: number) {
     try {
       const followUser = this.userFollowRepository.save(
@@ -362,6 +417,30 @@ export class UsersService {
     }
   }
 
+  // edit profile
+  async editProfile(data: EditProfileDto, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const nicname = this.userValidator.userNicname(data.nicname);
+      if (!nicname) {
+        Logger.log('error=> nicname is not defined!!!');
+        throw new BadRequestException('Nicname not exist!!!');
+      }
+      const validNicname = await this.usersRepository.findOne({
+        where: { nicname: nicname },
+      });
+      if (validNicname && validNicname.nicname !== user.nicname) {
+        throw new BadRequestException('this nicname already exist!!!');
+      }
+      if (!validNicname) {
+        await this.usersRepository.update({ id: user.id }, { nicname });
+      }
+      return { data: nicname, error: false, message: 'Nicname updated.' };
+    } catch (error) {
+      Logger.log('error=> edit profile function ', error);
   async getFeed(param: string, body: any) {
     try {
       let feed;

@@ -29,9 +29,11 @@ export class UserValidator {
       throw error;
     }
   }
+
+  // /^[A-Za-z0-9]+([A-Za-z0-9]*|[._]?[A-Za-z0-9]+)*$/
   public userNicname(nicname: string) {
     try {
-      const validRegex = /^[A-Za-z0-9]+([A-Za-z0-9]*|[._]?[A-Za-z0-9]+)*$/;
+      const validRegex = /^[a-zA-Z0-9]{6,20}$/;
       if (nicname.match(validRegex)) {
         return nicname;
       } else {

@@ -15,18 +15,21 @@ import { CreatePostBodyDto } from './dto/create.post.body.dto';
 import { FilterSearchDto } from './dto/filter.search.dto';
 import { FavoritsEntityBase } from './entity/favorite.post.entity';
 import { PostsEntityBase } from './entity/posts.entity';
-import { TagsEntityBase } from './tags/entity/tags.entity';
-import { TagsService } from './tags/tags.service';
+import { TagsService } from '../tags/tags.service';
 import { UploadFileEntityBase } from './upload_file/entity/upload_file.entity';
 import { UploadFileService } from './upload_file/upload_file.service';
+import { TagsPostEntityBase } from '../tags/entity/tags.for.posts.entity';
+import { TagsNameEntityBase } from '../tags/entity/tags.name.entity';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(PostsEntityBase)
     private postsRepository: Repository<PostsEntityBase>,
-    @InjectRepository(TagsEntityBase)
-    private tagsRepository: Repository<TagsEntityBase>,
+    @InjectRepository(TagsPostEntityBase)
+    private tagsPostRepository: Repository<TagsPostEntityBase>,
+    @InjectRepository(TagsNameEntityBase)
+    private tagsNameRepository: Repository<TagsNameEntityBase>,
     @InjectRepository(UploadFileEntityBase)
     private uploadFileRepository: Repository<UploadFileEntityBase>,
     @InjectRepository(FavoritsEntityBase)
@@ -51,7 +54,10 @@ export class PostsService {
 
       if (data.tags.length <= 5 && data.tags.length >= 3) {
         await this.postsRepository.save(newPost);
-        await this.tagsService.addTags({ postId: newPost.id, name: data.tags });
+        await this.tagsService.addTagsForPost({
+          postId: newPost.id,
+          name: data.tags,
+        });
       } else {
         throw new BadRequestException('Tags length is not defined!!!');
       }
@@ -104,7 +110,7 @@ export class PostsService {
         .leftJoinAndSelect('post.uploadFileEntity', 'upload_fileId')
         .leftJoinAndSelect('post.tagsEntity', 'tagsId')
         .andWhere('upload_fileId.postId = :id', { id })
-        .andWhere('tagsId.postId = :id', { id })
+        .andWhere('tagsId.post = :id', { id })
         .where('post.id = :id', { id })
         .getOne();
       if (!post) {
@@ -190,7 +196,7 @@ export class PostsService {
     }
   }
 
-  // search posts by tags
+  // // search posts by tags
   async searchByTagsPost(query: FilterSearchDto, request: any) {
     try {
       // const user = await this.authService.verifyToken(request);
@@ -198,9 +204,9 @@ export class PostsService {
       //   throw new UnauthorizedException('User not authorization!!!');
       // }
 
-      const [result, count] = await this.tagsRepository
+      const [result, count] = await this.tagsPostRepository
         .createQueryBuilder('tags')
-        .leftJoinAndSelect('tags.postId', 'postId')
+        .leftJoinAndSelect('tags.post', 'postId')
         .limit(query.limit)
         .offset(query.offset)
         .orderBy('tags.createdAt', 'DESC')
