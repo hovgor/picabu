@@ -15,8 +15,9 @@ import { UserValidator } from '../../../shared/validators/user.validator';
 import { client } from 'src/config/config.service.redis';
 import * as securePin from 'secure-pin';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const mailer = require('../../../shared/email/mail.sender')
+const mailer = require('../../../shared/email/mail.sender');
 import { HashPassword } from 'src/shared/password-hash/hash.password';
+import { EditProfileDto } from '../dto/edit.profile.dto';
 
 @Injectable()
 export class SettingsService {
@@ -29,6 +30,7 @@ export class SettingsService {
     private readonly validator: UserValidator,
     @Inject(forwardRef(() => HashPassword))
     private readonly passwordHashing: HashPassword,
+    private readonly userValidator: UserValidator,
   ) {}
 
   // change Profile Photo
@@ -249,6 +251,58 @@ export class SettingsService {
         message: 'Password Successfully Changed',
       };
     } catch (error) {
+      throw error;
+    }
+  }
+
+  // edit profile
+  async editProfile(data: EditProfileDto, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const nicname = this.userValidator.userNicname(data.nicname);
+      if (!nicname) {
+        Logger.log('error=> nicname is not defined!!!');
+        throw new BadRequestException('Nicname not exist!!!');
+      }
+      const validNicname = await this.usersRepository.findOne({
+        where: { nicname: nicname },
+      });
+      if (validNicname && validNicname.nicname !== user.nicname) {
+        throw new BadRequestException('this nicname already exist!!!');
+      }
+      if (!validNicname) {
+        await this.usersRepository.update({ id: user.id }, { nicname });
+      }
+      return { data: nicname, error: false, message: 'Nicname updated.' };
+    } catch (error) {
+      Logger.log('error=> edit profile function ', error);
+      throw error;
+    }
+  }
+
+  // help center
+  async usersHelpCenter(message: string, request: any) {
+    try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const messageing = {
+        to: process.env.HELP_CENTER_EMAIL,
+        subject: 'help-center',
+        test: `help center`,
+        html: `<h1>Message => ${message}</h1>
+          <h2>users email => ${user.email}</h2>
+        `,
+      };
+
+      mailer(messageing);
+      return { data: null, error: false, message: 'Messages sent.' };
+    } catch (error) {
+      Logger.log('error=> users help center function ', error);
       throw error;
     }
   }

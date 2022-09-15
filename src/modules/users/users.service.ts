@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  Body,
   forwardRef,
   Inject,
   Injectable,
@@ -21,9 +20,7 @@ import { GroupsEntityBase } from '../groups/entity/groups.entity';
 import { PostsEntityBase } from '../posts/entity/posts.entity';
 import { UserFollowEntitiyBase } from './entity/user.following.entity';
 import { ReactionsDto } from './dto/reactions.dto';
-import { UserValidator } from 'src/shared/validators/user.validator';
 import { BlockedEntityBase } from './entity/blocked.entity';
-import { EditProfileDto } from './dto/edit.profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -42,15 +39,14 @@ export class UsersService {
     private commentRepository: Repository<CommentsEntityBase>,
     @InjectRepository(CommentsReactionsEntityBase)
     private commentReactionRepository: Repository<CommentsReactionsEntityBase>,
-    @InjectRepository(SubscribeGroupEntityBase)
-    private userFollowRepository: Repository<UserFollowEntitiyBase>,
     @InjectRepository(UserFollowEntitiyBase)
+    private userFollowRepository: Repository<UserFollowEntitiyBase>,
+    @InjectRepository(SubscribeGroupEntityBase)
     private subscribeGroupRepository: Repository<SubscribeGroupEntityBase>,
     @Inject(GroupsService)
     private readonly groupsService: GroupsService,
     @InjectRepository(PostsEntityBase)
     private readonly postRepository: Repository<PostsEntityBase>,
-    private readonly userValidator: UserValidator,
   ) {}
 
   // get me
@@ -275,6 +271,7 @@ export class UsersService {
           'This user is the creator of the group and he cannot subscribe.',
         );
       }
+
       const isSubscribe = await this.subscribeGroupRepository.find({
         where: { userId: user.id, groupId: groupId },
       });
@@ -291,7 +288,7 @@ export class UsersService {
         );
       return { data: subscribe, error: false, message: 'User is subscribed.' };
     } catch (error) {
-      Logger.log('error=> subscribe group function ', error);
+      Logger.log('error=> subscribe group function', error);
       throw error;
     }
   }
@@ -323,7 +320,7 @@ export class UsersService {
       await this.subscribeGroupRepository.delete(isSubscribe[0].id);
       return { data: null, error: false, message: 'User is unsigned.' };
     } catch (error) {
-      Logger.log('error=> subscribe group function ', error);
+      Logger.log('error=> UNsubscribe group function ', error);
       throw error;
     }
   }
@@ -344,7 +341,7 @@ export class UsersService {
       }
       return { data: null, error: false, message: 'Successfully Unfollowed' };
     } catch (error) {
-      Logger.log('error=> subscribe group function ', error);
+      Logger.log('error=> Unfollow group function ', error);
       throw error;
     }
   }
@@ -353,8 +350,8 @@ export class UsersService {
     try {
       const followUser = this.userFollowRepository.save(
         this.userFollowRepository.create({
-          user_id: userId,
-          follow_to_id: followToId,
+          userId: userId,
+          followToId: followToId,
         }),
       );
       return {
@@ -363,7 +360,7 @@ export class UsersService {
         message: 'Successfully Followed',
       };
     } catch (error) {
-      Logger.log('error=> subscribe group function ', error);
+      Logger.log('error=> follow user function ', error);
       throw error;
     }
   }
@@ -398,7 +395,7 @@ export class UsersService {
       //------------------------------------------------------
       return { data: feed, error: false, message: 'User is unsigned.' };
     } catch (error) {
-      Logger.log('error=> subscribe group function ', error);
+      Logger.log('error=> Get feed function ', error);
       throw error;
     }
   }
@@ -473,34 +470,6 @@ export class UsersService {
       return blockedList;
     } catch (error) {
       Logger.log('get blocked list function ', error);
-      throw error;
-    }
-  }
-
-  // edit profile
-  async editProfile(data: EditProfileDto, request: any) {
-    try {
-      const user: UsersEntityBase = await this.authService.verifyToken(request);
-      if (!user) {
-        throw new UnauthorizedException('User not authorized!!!');
-      }
-      const nicname = this.userValidator.userNicname(data.nicname);
-      if (!nicname) {
-        Logger.log('error=> nicname is not defined!!!');
-        throw new BadRequestException('Nicname not exist!!!');
-      }
-      const validNicname = await this.usersRepository.findOne({
-        where: { nicname: nicname },
-      });
-      if (validNicname && validNicname.nicname !== user.nicname) {
-        throw new BadRequestException('this nicname already exist!!!');
-      }
-      if (!validNicname) {
-        await this.usersRepository.update({ id: user.id }, { nicname });
-      }
-      return { data: nicname, error: false, message: 'Nicname updated.' };
-    } catch (error) {
-      Logger.log('error=> edit profile function ', error);
       throw error;
     }
   }

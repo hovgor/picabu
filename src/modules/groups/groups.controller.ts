@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpStatus,
   Param,
   ParseIntPipe,
@@ -41,6 +42,7 @@ export class GroupsController {
       throw error;
     }
   }
+
   @UsePipes(new ValidationPipe())
   @ApiBearerAuth()
   @ApiResponse({
@@ -56,6 +58,17 @@ export class GroupsController {
     try {
       const deleteGroup = await this.groupsService.deleteGroup(id, req);
       return res.status(HttpStatus.NO_CONTENT).json(deleteGroup);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @UsePipes(new ValidationPipe())
+  @Get(':id')
+  async getGroups(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    try {
+      const groups = await this.groupsService.getGroups(id);
+      res.status(HttpStatus.OK).json(groups);
     } catch (error) {
       throw error;
     }

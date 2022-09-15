@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Req,
   Res,
@@ -18,6 +19,8 @@ import {
   ChangeEmailDto,
   ChangePasswordDto,
 } from '../dto/settings.dto';
+import { EditProfileDto } from '../dto/edit.profile.dto';
+import { HelpCenterDto } from './dto/help.center.dto';
 @Controller('settings')
 @ApiTags('Settings')
 export class settingsController {
@@ -142,6 +145,39 @@ export class settingsController {
         req,
       );
       res.status(HttpStatus.OK).json(changePassword);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Patch('editProfile')
+  async editeProfile(
+    @Body() body: EditProfileDto,
+    @Req() req: any,
+    @Res() res: Response,
+  ) {
+    try {
+      const editing = await this.settingsService.editProfile(body, req);
+      return res.status(HttpStatus.ACCEPTED).json(editing);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Post('usersHelpCenter')
+  async usersHelpCenter(
+    @Body() body: HelpCenterDto,
+    @Req() req: any,
+    @Res() res: Response,
+  ) {
+    try {
+      const helpCenter = await this.settingsService.usersHelpCenter(
+        body.message,
+        req,
+      );
+      return res.status(HttpStatus.ACCEPTED).json(helpCenter);
     } catch (error) {
       throw error;
     }

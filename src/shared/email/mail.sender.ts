@@ -14,13 +14,11 @@ const transporter = nodemailer.createTransport(
     },
   },
   {
-    from: `"Fred Foo 👻" <${process.env.SEND_EMAIL_ADDRESS}>`,
+    from: `"POSTHUB" <${process.env.SEND_EMAIL_ADDRESS}>`,
   },
 );
 
 const mailer = (message) => {
-  console.log(44444, message);
-
   transporter.sendMail(message, (error, info) => {
     if (error) {
       return { success: false, error };

@@ -4,13 +4,17 @@ import {
   Inject,
   Injectable,
   Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { group } from 'console';
 import { AuthService } from 'src/auth/auth.service';
 import { Repository } from 'typeorm';
+import { FilterSearchDto } from '../posts/dto/filter.search.dto';
 // import { TagsEntityBase } from '../posts/tags/entity/tags.entity';
 import { TagsService } from '../tags/tags.service';
+import { SubscribeGroupEntityBase } from '../users/entity/subscribe.group.entity';
 import { UsersEntityBase } from '../users/entity/users.entity';
 import { CreateGroupDto } from './dto/create.group.dto';
 import { GroupsEntityBase } from './entity/groups.entity';
@@ -20,6 +24,8 @@ export class GroupsService {
   constructor(
     @InjectRepository(GroupsEntityBase)
     private readonly groupsRepository: Repository<GroupsEntityBase>,
+    @InjectRepository(SubscribeGroupEntityBase)
+    private readonly groupsSubscribeRepository: Repository<SubscribeGroupEntityBase>,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
     @Inject(forwardRef(() => TagsService))
@@ -99,8 +105,65 @@ export class GroupsService {
   async getGroupById(id: number) {
     try {
       return await this.groupsRepository.findOne({ where: { id } });
+
+      // const group = await this.groupsRepository
+      // .createQueryBuilder('group')
+      // .leftJoinAndSelect('group.postsEntity', 'postId')
+      // .leftJoinAndSelect('group.tagsEntity', 'tagsId')
+      // .leftJoinAndSelect('group.groupEntity', 'groupSubscribeId')
+      // .andWhere('postId.groupId = :id', { id })
+      // .andWhere('groupSubscribeId.groupId = :id', { id })
+      // .andWhere('tagsId.group = :id', { id })
+      // .where('group.id = :id', { id })
+      // .getManyAndCount();
+
+      // .createQueryBuilder('posts')
+      // .limit(query.limit)
+      // .offset(query.offset)
+      // .orderBy('posts.createdAt', 'DESC')
+      // .where(`lower("posts"."title") LIKE lower('${query.beginning || ''}%')`)
+      // .getManyAndCount();
     } catch (error) {
       Logger.log('error=> get group by Id function ', error);
+      throw error;
+    }
+  }
+  async getGroups(id: number) {
+    try {
+      const group = await this.groupsRepository
+        .createQueryBuilder('group')
+        .leftJoinAndSelect('group.postsEntity', 'postId')
+        .leftJoinAndSelect('group.tagsEntity', 'tagsId')
+        .leftJoinAndSelect('group.groupEntity', 'groupSubscribeId')
+        .andWhere('postId.groupId = :id', { id })
+        .andWhere('groupSubscribeId.groupId = :id', { id })
+        .andWhere('tagsId.group = :id', { id })
+        .where('group.id = :id', { id })
+        .getManyAndCount();
+
+      if (!group) {
+        throw new NotFoundException('Group is not defined!!!');
+      }
+      return { data: group, error: false, message: 'this is a group' };
+    } catch (error) {
+      Logger.log('error=> get group by Id function ', error);
+      throw error;
+    }
+  }
+
+  // filter group
+  async filterGroup(query: FilterSearchDto) {
+    try {
+      const group = await this.groupsRepository
+        .createQueryBuilder('group')
+        .limit(query.limit)
+        .offset(query.offset)
+        .orderBy('group.createdAt', 'DESC')
+        .where(`lower("group"."title") LIKE lower('${query.beginning || ''}%')`)
+        .getManyAndCount();
+      return { data: group, error: false, message: 'filter group.' };
+    } catch (error) {
+      Logger.log('error=> filter group function ', error);
       throw error;
     }
   }
