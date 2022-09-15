@@ -18,6 +18,7 @@ import { ProvidersController } from 'src/auth/passwordLess/providers.controller'
 import { UserFollowEntitiyBase } from './entity/user.following.entity';
 import { PostsEntityBase } from '../posts/entity/posts.entity';
 import { BlockedEntityBase } from './entity/blocked.entity';
+import { ProfileService } from './profile/profile.service';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { BlockedEntityBase } from './entity/blocked.entity';
     HashPassword,
     ProvidersService,
     SettingsService,
+    ProfileService,
   ],
   controllers: [UsersController, settingsController, ProvidersController],
   exports: [UsersService, SettingsService, ProvidersService],

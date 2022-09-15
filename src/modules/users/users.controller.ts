@@ -202,7 +202,7 @@ export class UsersController {
   @ApiBearerAuth()
   @Get('/getBlockedUsers')
   async getBlockedUsers(
-    // @Body() body: BlockedUserDto,
+    @Body() body: BlockedUserDto,
     @Res() res: Response,
     @Req() req: any,
   ) {

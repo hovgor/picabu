@@ -43,9 +43,9 @@ export class UsersService {
     @InjectRepository(CommentsReactionsEntityBase)
     private commentReactionRepository: Repository<CommentsReactionsEntityBase>,
     @InjectRepository(SubscribeGroupEntityBase)
-    private userFollowRepository: Repository<UserFollowEntitiyBase>,
-    @InjectRepository(UserFollowEntitiyBase)
     private subscribeGroupRepository: Repository<SubscribeGroupEntityBase>,
+    @InjectRepository(UserFollowEntitiyBase)
+    private userFollowRepository: Repository<UserFollowEntitiyBase>,
     @Inject(GroupsService)
     private readonly groupsService: GroupsService,
     @InjectRepository(PostsEntityBase)
