@@ -39,15 +39,10 @@ export class UsersService {
     private commentRepository: Repository<CommentsEntityBase>,
     @InjectRepository(CommentsReactionsEntityBase)
     private commentReactionRepository: Repository<CommentsReactionsEntityBase>,
-<<<<<<< HEAD
-=======
     @InjectRepository(UserFollowEntitiyBase)
     private userFollowRepository: Repository<UserFollowEntitiyBase>,
->>>>>>> da12187ba4439efa086e8761e07ed72ed3fde909
     @InjectRepository(SubscribeGroupEntityBase)
     private subscribeGroupRepository: Repository<SubscribeGroupEntityBase>,
-    @InjectRepository(UserFollowEntitiyBase)
-    private userFollowRepository: Repository<UserFollowEntitiyBase>,
     @Inject(GroupsService)
     private readonly groupsService: GroupsService,
     @InjectRepository(PostsEntityBase)

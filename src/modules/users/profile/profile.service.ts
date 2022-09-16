@@ -1,17 +1,13 @@
 import {
-  BadRequestException,
-  Body,
   forwardRef,
   Inject,
   Injectable,
   Logger,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthService } from 'src/auth/auth.service';
-import { UserValidator } from 'src/shared/validators/user.validator';
 import { UserFollowEntitiyBase } from '../entity/user.following.entity';
 import { ReactionsEntityBase } from '../entity/reactions.entity';
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
@@ -108,7 +104,7 @@ export class ProfileService {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const followers = await this.userFollowRepository.find({
-        where: { follow_to_id: userId },
+        where: { followToId: userId },
       });
 
       return {
@@ -130,7 +126,7 @@ export class ProfileService {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const followings = await this.userFollowRepository.find({
-        where: { user_id: userId },
+        where: { userId: userId },
       });
 
       return {
@@ -175,7 +171,7 @@ export class ProfileService {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const createdPosts = await this.userFollowRepository.find({
-        where: { user_id: userId },
+        where: { userId },
       });
 
       return {
