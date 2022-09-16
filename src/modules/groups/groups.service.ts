@@ -8,7 +8,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { group } from 'console';
 import { AuthService } from 'src/auth/auth.service';
 import { Repository } from 'typeorm';
 import { FilterSearchDto } from '../posts/dto/filter.search.dto';
@@ -105,24 +104,6 @@ export class GroupsService {
   async getGroupById(id: number) {
     try {
       return await this.groupsRepository.findOne({ where: { id } });
-
-      // const group = await this.groupsRepository
-      // .createQueryBuilder('group')
-      // .leftJoinAndSelect('group.postsEntity', 'postId')
-      // .leftJoinAndSelect('group.tagsEntity', 'tagsId')
-      // .leftJoinAndSelect('group.groupEntity', 'groupSubscribeId')
-      // .andWhere('postId.groupId = :id', { id })
-      // .andWhere('groupSubscribeId.groupId = :id', { id })
-      // .andWhere('tagsId.group = :id', { id })
-      // .where('group.id = :id', { id })
-      // .getManyAndCount();
-
-      // .createQueryBuilder('posts')
-      // .limit(query.limit)
-      // .offset(query.offset)
-      // .orderBy('posts.createdAt', 'DESC')
-      // .where(`lower("posts"."title") LIKE lower('${query.beginning || ''}%')`)
-      // .getManyAndCount();
     } catch (error) {
       Logger.log('error=> get group by Id function ', error);
       throw error;
