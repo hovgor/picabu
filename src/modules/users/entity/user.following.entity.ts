@@ -1,4 +1,3 @@
-import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
 import {
   BaseEntity,
   Column,
@@ -21,14 +20,10 @@ export class UserFollowEntitiyBase extends BaseEntity {
   })
   @JoinColumn()
   @Column({ nullable: true, name: 'user_id' })
-  user_id: number;
+  userId: number;
 
-  @ManyToOne(() => GroupsEntityBase, (group) => group.groupEntity, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  @Column({ nullable: true, name: 'group_id' })
-  follow_to_id: number;
+  @Column({ nullable: true, name: 'follow_to_id' })
+  followToId: number;
 
   @CreateDateColumn({
     name: 'created_date',

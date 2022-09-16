@@ -213,19 +213,4 @@ export class UsersController {
       throw error;
     }
   }
-
-  @ApiBearerAuth()
-  @Patch('editProfile')
-  async editeProfile(
-    @Body() body: EditProfileDto,
-    @Req() req: any,
-    @Res() res: Response,
-  ) {
-    try {
-      const editing = await this.usersService.editProfile(body, req);
-      return res.status(HttpStatus.ACCEPTED).json(editing);
-    } catch (error) {
-      throw error;
-    }
-  }
 }
