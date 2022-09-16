@@ -15,6 +15,7 @@ import { ProfileService } from './profile.service';
 import {
   getprofileDataDto,
   getLikedDislikedPostsCountParam,
+  getLikedDislikedPostsParam,
 } from '../dto/profile.dto';
 @Controller('profile')
 @ApiTags('Profile')
@@ -125,6 +126,22 @@ export class ProfileController {
   ) {
     try {
       const data = await this.profileService.getCreatedPosts(req, body);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Get('/getPosts/:status')
+  async getReactedPosts(
+    @Body() body: getprofileDataDto,
+    @Res() res: Response,
+    @Req() req: any,
+    @Param() param: getLikedDislikedPostsParam,
+  ) {
+    try {
+      const data = await this.profileService.getReactedPosts(req, param, body);
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
       throw error;

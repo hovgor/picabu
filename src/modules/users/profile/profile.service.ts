@@ -188,4 +188,27 @@ export class ProfileService {
       throw error;
     }
   }
+
+  async getReactedPosts(req: any, param: any, body: any) {
+    try {
+      const userId = body.id;
+      const reaction = param;
+      const userAuth = await this.authService.verifyToken(req);
+      if (!userAuth) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+
+      const reactedPosts = await this.postsRepository
+        .createQueryBuilder()
+        .where(`user_id = ${userId} && reaction_type = ${reaction}`);
+      return {
+        data: {
+          user: reactedPosts,
+        },
+      };
+    } catch (error) {
+      Logger.log("error=> Can't get reacted posts", error);
+      throw error;
+    }
+  }
 }

@@ -16,3 +16,11 @@ export class getLikedDislikedPostsCountParam {
   @IsOptional()
   reaction: number;
 }
+
+export class getLikedDislikedPostsParam {
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  @IsOptional()
+  reaction: number;
+}
