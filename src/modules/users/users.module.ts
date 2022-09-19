@@ -19,7 +19,6 @@ import { UserFollowEntitiyBase } from './entity/user.following.entity';
 import { PostsEntityBase } from '../posts/entity/posts.entity';
 import { BlockedEntityBase } from './entity/blocked.entity';
 import { ProfileService } from './profile/profile.service';
-import { ProfileController } from './profile/profile.controller';
 
 @Module({
   imports: [
@@ -45,12 +44,7 @@ import { ProfileController } from './profile/profile.controller';
     SettingsService,
     ProfileService,
   ],
-  controllers: [
-    UsersController,
-    settingsController,
-    ProvidersController,
-    ProfileController,
-  ],
+  controllers: [UsersController, settingsController, ProvidersController],
   exports: [UsersService, SettingsService, ProvidersService],
 })
 export class UsersModule {}
