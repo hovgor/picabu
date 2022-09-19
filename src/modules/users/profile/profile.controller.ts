@@ -53,18 +53,16 @@ export class ProfileController {
   }
 
   @ApiBearerAuth()
-  @Get('/getLikedDislikedPostsCount/:reaction')
+  @Get('/getLikedDislikedPostsCount')
   async getLikedPostsCount(
     @Body() body: getprofileDataDto,
     @Res() res: Response,
     @Req() req: any,
-    @Param() param: getLikedDislikedPostsCountParam,
   ) {
     try {
       const data = await this.profileService.getLikedDislikedPostsCount(
         req,
         body,
-        param,
       );
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
@@ -74,11 +72,7 @@ export class ProfileController {
 
   @ApiBearerAuth()
   @Get('/getFollowers')
-  async getFollowers(
-    @Body() body: getprofileDataDto,
-    @Res() res: Response,
-    @Req() req: any,
-  ) {
+  async getFollowers(@Body() body: any, @Res() res: Response, @Req() req: any) {
     try {
       const data = await this.profileService.getFollowers(req, body);
       return res.status(HttpStatus.ACCEPTED).json(data);
@@ -90,12 +84,12 @@ export class ProfileController {
   @ApiBearerAuth()
   @Get('/getFollowings')
   async getFollowings(
-    @Body() body: getprofileDataDto,
+    @Body() body: any,
     @Res() res: Response,
     @Req() req: any,
   ) {
     try {
-      const data = await this.profileService.getFollowers(req, body);
+      const data = await this.profileService.getFollowings(req, body);
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
       throw error;
@@ -105,7 +99,7 @@ export class ProfileController {
   @ApiBearerAuth()
   @Get('/getCreatedPostsCount')
   async getCreatedPostsCount(
-    @Body() body: getprofileDataDto,
+    @Body() body: any,
     @Res() res: Response,
     @Req() req: any,
   ) {
@@ -120,7 +114,7 @@ export class ProfileController {
   @ApiBearerAuth()
   @Get('/getCreatedPosts')
   async getCreatedPosts(
-    @Body() body: getprofileDataDto,
+    @Body() body: any,
     @Res() res: Response,
     @Req() req: any,
   ) {
@@ -133,15 +127,14 @@ export class ProfileController {
   }
 
   @ApiBearerAuth()
-  @Get('/getPosts/:status')
+  @Get('/getReactedPosts')
   async getReactedPosts(
     @Body() body: getprofileDataDto,
     @Res() res: Response,
     @Req() req: any,
-    @Param() param: getLikedDislikedPostsParam,
   ) {
     try {
-      const data = await this.profileService.getReactedPosts(req, param, body);
+      const data = await this.profileService.getReactedPosts(req, body);
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
       throw error;

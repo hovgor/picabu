@@ -41,7 +41,7 @@ export class ReactionsEntityBase extends BaseEntity {
     nullable: true,
   })
   @JoinTable()
-  postEntity: AuthEntityBase[];
+  postEntity: PostsEntityBase[];
 
   @CreateDateColumn({
     name: 'created_date',

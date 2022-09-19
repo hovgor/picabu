@@ -6,7 +6,7 @@ export class getprofileDataDto {
   @IsNumber()
   @IsNotEmpty()
   @IsOptional()
-  id: number;
+  reaction: number;
 }
 
 export class getLikedDislikedPostsCountParam {

@@ -6,6 +6,12 @@ export class ChangePhotoDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
+  id: number;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
   profilePhoto: string;
 }
 

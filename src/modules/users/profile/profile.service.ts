@@ -28,14 +28,15 @@ export class ProfileService {
   // Get Followers Count
   async getFollowersCount(req: any, body: any) {
     try {
-      const userId = body.id;
       const userAuth = await this.authService.verifyToken(req);
+      const id = userAuth.id;
+
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const followersCount = await this.userFollowRepository
         .createQueryBuilder()
-        .where('following_to_id = :id', { id: userId })
+        .where(`follow_to_id = ${id}`)
         .getCount();
 
       return {
@@ -51,14 +52,14 @@ export class ProfileService {
 
   async getFollowingsCount(req: any, body: any) {
     try {
-      const userId = body.id;
       const userAuth = await this.authService.verifyToken(req);
+      const id = userAuth.id;
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const followingsCount = await this.userFollowRepository
         .createQueryBuilder()
-        .where('user_id = :id', { id: userId })
+        .where(`user_id = ${id}`)
         .getCount();
 
       return {
@@ -72,22 +73,22 @@ export class ProfileService {
     }
   }
 
-  async getLikedDislikedPostsCount(req: any, body: any, param: any) {
+  async getLikedDislikedPostsCount(req: any, body: any) {
     try {
-      const userId = body;
-      const reaction = param;
+      const reaction = parseInt(body.reaction);
       const userAuth = await this.authService.verifyToken(req);
+      const id = userAuth.id;
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const likedPostsCount = await this.reactionsRepository
         .createQueryBuilder()
-        .where(`user_id = ${userId} && reaction_type = ${reaction}`)
+        .where(`user_id = ${id} AND reaction_type = ${reaction}`)
         .getCount();
 
       return {
         data: {
-          user: likedPostsCount,
+          count: likedPostsCount,
         },
       };
     } catch (error) {
@@ -98,18 +99,18 @@ export class ProfileService {
 
   async getFollowers(req: any, body: any) {
     try {
-      const userId = body.id;
       const userAuth = await this.authService.verifyToken(req);
+      const id = userAuth.id;
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const followers = await this.userFollowRepository.find({
-        where: { followToId: userId },
+        where: { followToId: id },
       });
 
       return {
         data: {
-          user: followers,
+          followers: followers,
         },
       };
     } catch (error) {
@@ -120,18 +121,18 @@ export class ProfileService {
 
   async getFollowings(req: any, body: any) {
     try {
-      const userId = body.id;
       const userAuth = await this.authService.verifyToken(req);
+      const id = userAuth.id;
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const followings = await this.userFollowRepository.find({
-        where: { userId: userId },
+        where: { userId: id },
       });
 
       return {
         data: {
-          user: followings,
+          followings: followings,
         },
       };
     } catch (error) {
@@ -142,19 +143,20 @@ export class ProfileService {
 
   async getCreatedPostsCount(req: any, body: any) {
     try {
-      const userId = body.id;
       const userAuth = await this.authService.verifyToken(req);
+      const id = userAuth.id;
+
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const createdPostsCount = await this.postsRepository
         .createQueryBuilder()
-        .where(`user_id = ${userId}`)
+        .where(`user_id = ${id}`)
         .getCount();
 
       return {
         data: {
-          user: createdPostsCount,
+          createdPostsCount: createdPostsCount,
         },
       };
     } catch (error) {
@@ -165,13 +167,14 @@ export class ProfileService {
 
   async getCreatedPosts(req: any, body: any) {
     try {
-      const userId = body.id;
       const userAuth = await this.authService.verifyToken(req);
+      const id = userAuth.id;
+
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const createdPosts = await this.userFollowRepository.find({
-        where: { userId },
+        where: { id },
       });
 
       return {
@@ -185,22 +188,26 @@ export class ProfileService {
     }
   }
 
-  async getReactedPosts(req: any, param: any, body: any) {
+  async getReactedPosts(req: any, body: any) {
     try {
-      const userId = body.id;
-      const reaction = param;
+      const reaction = body.reaction;
+
       const userAuth = await this.authService.verifyToken(req);
+      const id = userAuth.id;
+
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
 
-      const reactedPosts = await this.postsRepository
-        .createQueryBuilder()
-        .where(`user_id = ${userId} && reaction_type = ${reaction}`);
+      const reactedPosts = await this.reactionsRepository
+        .createQueryBuilder('posts')
+        .leftJoinAndSelect('Posts.postEntity', 'postId')
+        .orderBy('posts.createdAt', 'DESC')
+        .where(`user_id = ${id} AND reactiuon_type = ${reaction}`)
+        .getManyAndCount();
+
       return {
-        data: {
-          user: reactedPosts,
-        },
+        reactedPosts: reactedPosts,
       };
     } catch (error) {
       Logger.log("error=> Can't get reacted posts", error);

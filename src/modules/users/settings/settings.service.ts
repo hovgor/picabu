@@ -34,16 +34,18 @@ export class SettingsService {
   ) {}
 
   // change Profile Photo
-  async changeProfilePhoto(id: number, req: any) {
+  async changeProfilePhoto(req: any, photo: string) {
     try {
       const userAuth = await this.authService.verifyToken(req);
+      const id = userAuth.id;
+
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const user = await this.usersRepository
         .createQueryBuilder()
         .update(this.usersRepository)
-        .set({ profile_photo_url: req.body.photo })
+        .set({ profile_photo_url: photo })
         .where('id = :id', { id: id })
         .execute();
       if (!user) {
@@ -61,9 +63,10 @@ export class SettingsService {
     }
   }
 
-  async deleteProfilePhopto(id: number, req: any) {
+  async deleteProfilePhopto(req: any) {
     try {
       const userAuth = await this.authService.verifyToken(req);
+      const id = userAuth.id;
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
@@ -89,27 +92,26 @@ export class SettingsService {
   }
 
   // change UserName
-  async changeNickname(id: number, req: any) {
+  async changeNickname(body: string, req: any) {
     try {
+      const nickname = body;
       const userAuth = await this.authService.verifyToken(req);
+      const id = userAuth.id;
+
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const user = await this.usersRepository
         .createQueryBuilder()
         .update(this.usersRepository)
-        .set({ nicname: req.body.nickname })
+        .set({ nicname: nickname })
         .where('id = :id', { id: id })
         .execute();
       if (!user) {
         Logger.log("Can't update user Nickname");
         throw new NotFoundException("Can't update user Nickname");
       }
-      return {
-        data: {
-          user: user,
-        },
-      };
+      return user.raw;
     } catch (error) {
       Logger.log("error=> Can't update user Nickname", error);
       throw error;

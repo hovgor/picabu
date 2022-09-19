@@ -9,6 +9,7 @@ import {
   Post,
   Req,
   Res,
+  Put,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -27,17 +28,17 @@ export class settingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
   @ApiBearerAuth()
-  @Get('/changeProfilePhopto/:id')
+  @Patch('/changeProfilePhoto')
   async changeProfilePhopto(
-    @Param('id', ParseIntPipe) id: number,
     @Body() body: ChangePhotoDto,
     @Res() res: Response,
     @Req() req: any,
   ) {
     try {
+      const photo = body.profilePhoto;
       const profilePhoto = await this.settingsService.changeProfilePhoto(
-        id,
         req,
+        photo,
       );
       res.status(HttpStatus.OK).json(profilePhoto);
     } catch (error) {
@@ -46,18 +47,14 @@ export class settingsController {
   }
 
   @ApiBearerAuth()
-  @Get('/changeProfilePhopto/:id')
+  @Patch('/deleteProfilePhopto')
   async deleteProfilePhopto(
-    @Param('id', ParseIntPipe) id: number,
     @Body() body: ChangePhotoDto,
     @Res() res: Response,
     @Req() req: any,
   ) {
     try {
-      const profilePhoto = await this.settingsService.deleteProfilePhopto(
-        id,
-        req,
-      );
+      const profilePhoto = await this.settingsService.deleteProfilePhopto(req);
       res.status(HttpStatus.OK).json(profilePhoto);
     } catch (error) {
       throw error;
@@ -65,15 +62,18 @@ export class settingsController {
   }
 
   @ApiBearerAuth()
-  @Get('/changeName/:id')
+  @Patch('/changeName')
   async changeUserName(
-    @Param('id', ParseIntPipe) id: number,
     @Body() body: ChangeNicknameDto,
     @Res() res: Response,
     @Req() req: any,
   ) {
     try {
-      const changeNickname = await this.settingsService.changeNickname(id, req);
+      const changeNickname = await this.settingsService.changeNickname(
+        body.nickname,
+        req,
+      );
+
       res.status(HttpStatus.OK).json(changeNickname);
     } catch (error) {
       throw error;
@@ -81,7 +81,7 @@ export class settingsController {
   }
 
   @ApiBearerAuth()
-  @Get('/changeEmail/verify')
+  @Patch('/changeEmail/verify')
   async changeEmailVerify(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: ChangeEmailDto,
@@ -103,7 +103,7 @@ export class settingsController {
   }
 
   @ApiBearerAuth()
-  @Get('/changeEmail/confirm')
+  @Patch('/changeEmail/confirm')
   async changeEmailConfirm(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: ChangeEmailDto,
@@ -127,7 +127,7 @@ export class settingsController {
   }
 
   @ApiBearerAuth()
-  @Get('/changePassword')
+  @Patch('/changePassword')
   async changePassword(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: ChangePasswordDto,
@@ -151,7 +151,7 @@ export class settingsController {
   }
 
   @ApiBearerAuth()
-  @Patch('editProfile')
+  @Patch('/editProfile')
   async editeProfile(
     @Body() body: EditProfileDto,
     @Req() req: any,
@@ -166,7 +166,7 @@ export class settingsController {
   }
 
   @ApiBearerAuth()
-  @Post('usersHelpCenter')
+  @Patch('/usersHelpCenter')
   async usersHelpCenter(
     @Body() body: HelpCenterDto,
     @Req() req: any,
