@@ -10,7 +10,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { ReactionsDto } from './dto/reactions.dto';
 import { UsersService } from './users.service';
@@ -167,6 +167,11 @@ export class UsersController {
   }
 
   // blocked user
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description:
+      'To block a user, you need to add his id. And add the token to the jogoheads.',
+  })
   @ApiBearerAuth()
   @Post('/blockedUser')
   async blockedUser(
@@ -184,6 +189,11 @@ export class UsersController {
 
   // unblocked user
   @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description:
+      'To unblock a user, you need to add his id. And add the token to the jogoheads.',
+  })
   @Post('/unblockedUser')
   async unBlockedUser(
     @Body() body: BlockedUserDto,
@@ -200,12 +210,12 @@ export class UsersController {
 
   // get all blocked users
   @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description: 'Add a token and it will show all blockers (black list).',
+  })
   @Get('/getBlockedUsers')
-  async getBlockedUsers(
-    @Body() body: BlockedUserDto,
-    @Res() res: Response,
-    @Req() req: any,
-  ) {
+  async getBlockedUsers(@Res() res: Response, @Req() req: any) {
     try {
       const data = await this.usersService.getBlockedList(req);
       return res.status(HttpStatus.ACCEPTED).json(data);

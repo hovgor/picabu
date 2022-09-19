@@ -4,8 +4,6 @@ import {
   Get,
   HttpStatus,
   Param,
-  ParseIntPipe,
-  Post,
   Req,
   Res,
 } from '@nestjs/common';
@@ -17,8 +15,9 @@ import {
   getLikedDislikedPostsCountParam,
   getLikedDislikedPostsParam,
 } from '../dto/profile.dto';
-@Controller('profile')
+
 @ApiTags('Profile')
+@Controller('profile')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
