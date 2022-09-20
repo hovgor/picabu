@@ -21,6 +21,8 @@ import { PostsEntityBase } from '../posts/entity/posts.entity';
 import { UserFollowEntitiyBase } from './entity/user.following.entity';
 import { ReactionsDto } from './dto/reactions.dto';
 import { BlockedEntityBase } from './entity/blocked.entity';
+import { ReplyCommentDto } from './dto/comment.dto';
+import { CommentDto } from './dto/comment.one.dto';
 
 @Injectable()
 export class UsersService {
@@ -131,12 +133,19 @@ export class UsersService {
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
-      const { userId, postId, reactionType } = body;
+
+      const post = await this.postRepository.findOne({
+        where: { id: body.postId },
+      });
+      if (!post) {
+        throw new NotFoundException('Post is not exist!!!');
+      }
+
       const ifReacted = await this.postsReactionRepository.findOne({
-        where: { user_id: userId },
+        where: { userId: userAuth.id },
       });
       if (ifReacted !== null) {
-        if (ifReacted.reaction_type == reactionType) {
+        if (ifReacted.reactionType == body.reactionType) {
           return {
             data: null,
             error: false,
@@ -146,7 +155,11 @@ export class UsersService {
       }
       // const data = { userId, postId, reactionType };
       const reacted = await this.postsReactionRepository.upsert(
-        { user_id: userId, post_id: postId, reaction_type: reactionType },
+        {
+          userId: userAuth.id,
+          postId: body.postId,
+          reactionType: body.reactionType,
+        },
         {
           conflictPaths: ['user_id', 'post_id'],
           skipUpdateIfNoValuesChanged: true,
@@ -155,7 +168,7 @@ export class UsersService {
       const reactionsCount = await this.postsRepository
         .createQueryBuilder()
         .update(this.postsRepository)
-        .set({ rating: () => `rating + ${reactionType}` });
+        .set({ rating: () => `rating + ${body.reactionType}` });
       if (!reacted) throw new Error('Reaction was not Counted');
       return reacted;
     } catch (error) {
@@ -164,18 +177,23 @@ export class UsersService {
     }
   }
 
-  async commentPost(body: any, request: any) {
+  async commentPost(body: CommentDto, request: any) {
     try {
       const userAuth = await this.authService.verifyToken(request);
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
-      const { userId, postId, comment } = body;
+      const post = await this.postRepository.findOne({
+        where: { id: body.postId },
+      });
+      if (!post) {
+        throw new NotFoundException('Post is not exist!!!');
+      }
       const commented = await this.commentRepository.save(
         this.commentRepository.create({
-          user_id: userId,
-          post_id: postId,
-          comment: comment,
+          userId: userAuth.id,
+          postId: body.postId,
+          comment: body.comment,
         }),
       );
       return {
@@ -189,19 +207,24 @@ export class UsersService {
     }
   }
 
-  async replyCommentPost(body: any, request: any) {
+  async replyCommentPost(body: ReplyCommentDto, request: any) {
     try {
       const userAuth = await this.authService.verifyToken(request);
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
-      const { userId, postId, commentId, comment } = body;
+      const post = await this.postRepository.findOne({
+        where: { id: body.postId },
+      });
+      if (!post) {
+        throw new NotFoundException('Post is not exist!!!');
+      }
       const commented = await this.commentRepository.save(
         this.commentRepository.create({
-          user_id: userId,
-          post_id: postId,
-          parent_comment_id: commentId,
-          comment: comment,
+          userId: userAuth.id,
+          postId: body.postId,
+          parentCommentId: body.parrentCommentId,
+          comment: body.comment,
         }),
       );
       return {
@@ -223,10 +246,10 @@ export class UsersService {
       }
       const { userId, commentId, reactionType } = body;
       const ifReacted = await this.commentReactionRepository.findOne({
-        where: { user_id: userId },
+        where: { userId: userId },
       });
       if (ifReacted !== null) {
-        if (ifReacted.reaction_type == reactionType) {
+        if (ifReacted.reactionType == reactionType) {
           return {
             data: null,
             error: false,
@@ -236,9 +259,9 @@ export class UsersService {
       }
       const reacted = await this.commentReactionRepository.upsert(
         {
-          user_id: userId,
-          comment_id: commentId,
-          reaction_type: reactionType,
+          userId: userId,
+          commentId: commentId,
+          reactionType: reactionType,
         },
         {
           conflictPaths: ['user_id', 'comment_id'],

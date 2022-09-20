@@ -45,7 +45,7 @@ export class SettingsService {
       const user = await this.usersRepository
         .createQueryBuilder()
         .update(this.usersRepository)
-        .set({ profile_photo_url: photo })
+        .set({ profilePhotoUrl: photo })
         .where('id = :id', { id: id })
         .execute();
       if (!user) {
@@ -73,7 +73,7 @@ export class SettingsService {
       const user = await this.usersRepository
         .createQueryBuilder()
         .update(this.usersRepository)
-        .set({ profile_photo_url: null })
+        .set({ profilePhotoUrl: null })
         .where('id = :id', { id: id })
         .execute();
       if (!user) {

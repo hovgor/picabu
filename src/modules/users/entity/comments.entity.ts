@@ -5,43 +5,37 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
-  OneToMany,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UsersEntityBase } from './users.entity';
 
-@Entity({ schema: 'default', name: 'posts_comments' })
+@Entity({ schema: 'default', name: 'Posts_comments' })
 export class CommentsEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false })
-  user_id: number;
+  @ManyToOne(() => UsersEntityBase, (comment) => comment.commentsEntity, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  @Column({ name: 'user_id' })
+  userId: number;
 
-  @Column({ nullable: false })
-  post_id: number;
+  @ManyToOne(() => PostsEntityBase, (comment) => comment.commentsEntity, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  @Column({ name: 'post_id' })
+  postId: number;
 
   @Column({ nullable: false })
   comment: string;
 
-  @Column({ nullable: true })
-  parent_comment_id: number;
-
-  @OneToMany(() => UsersEntityBase, (users) => users.id, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinTable()
-  authEntity: AuthEntityBase[];
-
-  @OneToMany(() => PostsEntityBase, (post) => post.userId, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinTable()
-  postEntity: AuthEntityBase[];
+  @Column({ nullable: true, default: 0 })
+  parentCommentId: number;
 
   @CreateDateColumn({
     name: 'created_date',

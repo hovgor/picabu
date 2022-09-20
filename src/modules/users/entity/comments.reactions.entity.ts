@@ -20,13 +20,13 @@ export class CommentsReactionsEntityBase extends BaseEntity {
   id: number;
 
   @Column({ nullable: false })
-  user_id: number;
+  userId: number;
 
   @Column({ nullable: false })
-  comment_id: number;
+  commentId: number;
 
   @Column({ nullable: false })
-  reaction_type: number;
+  reactionType: number;
 
   @OneToMany(() => UsersEntityBase, (users) => users.id, {
     onDelete: 'CASCADE',

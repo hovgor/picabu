@@ -16,6 +16,7 @@ import {
 } from 'typeorm';
 import { SubscribeGroupEntityBase } from './subscribe.group.entity';
 import { BlockedEntityBase } from './blocked.entity';
+import { CommentsEntityBase } from './comments.entity';
 
 @Entity({ schema: 'default', name: 'Users' })
 export class UsersEntityBase extends BaseEntity {
@@ -35,7 +36,7 @@ export class UsersEntityBase extends BaseEntity {
   nicname: string;
 
   @Column({ default: null, nullable: true })
-  profile_photo_url: string;
+  profilePhotoUrl: string;
 
   @Column({ default: 'local', nullable: false })
   provider: string;
@@ -108,6 +109,13 @@ export class UsersEntityBase extends BaseEntity {
   })
   @JoinTable()
   groupeEntity: GroupsEntityBase[];
+
+  @OneToMany(() => CommentsEntityBase, (comment) => comment.userId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  commentsEntity: CommentsEntityBase[];
 
   @CreateDateColumn({
     name: 'created_date',

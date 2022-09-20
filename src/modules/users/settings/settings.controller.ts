@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Get,
   HttpStatus,
   Param,
   ParseIntPipe,
@@ -9,7 +8,6 @@ import {
   Post,
   Req,
   Res,
-  Put,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -22,6 +20,7 @@ import {
 } from '../dto/settings.dto';
 import { EditProfileDto } from '../dto/edit.profile.dto';
 import { HelpCenterDto } from './dto/help.center.dto';
+
 @Controller('settings')
 @ApiTags('Settings')
 export class settingsController {
@@ -166,7 +165,7 @@ export class settingsController {
   }
 
   @ApiBearerAuth()
-  @Patch('/usersHelpCenter')
+  @Post('/usersHelpCenter')
   async usersHelpCenter(
     @Body() body: HelpCenterDto,
     @Req() req: any,

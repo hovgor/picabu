@@ -14,20 +14,20 @@ import {
 } from 'typeorm';
 import { UsersEntityBase } from './users.entity';
 
-@Entity({ schema: 'default', name: 'user_posts_reactions' })
-@Unique(['user_id', 'post_id'])
+@Entity({ schema: 'default', name: 'User_posts_reactions' })
+@Unique(['userId', 'postId'])
 export class ReactionsEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ nullable: false })
-  user_id: number;
+  userId: number;
 
   @Column({ nullable: false })
-  post_id: number;
+  postId: number;
 
   @Column({ nullable: false })
-  reaction_type: number;
+  reactionType: number;
 
   @OneToMany(() => UsersEntityBase, (users) => users.id, {
     onDelete: 'CASCADE',

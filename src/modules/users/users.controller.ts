@@ -5,7 +5,6 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
-  Patch,
   Post,
   Req,
   Res,
@@ -14,12 +13,12 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { ReactionsDto } from './dto/reactions.dto';
 import { UsersService } from './users.service';
-import { CommentDto } from './dto/comment.dto';
+import { ReplyCommentDto } from './dto/comment.dto';
 import { CommentsReactionsDto } from './dto/comments.reactions.dto';
 import { FeedDto, FeedParamsDto } from './dto/feed.dto';
 import { followUnfollowDto } from './dto/follow.unfollow.dto';
 import { BlockedUserDto } from './dto/blocked.user.dto';
-import { EditProfileDto } from './dto/edit.profile.dto';
+import { CommentDto } from './dto/comment.one.dto';
 
 @Controller('users')
 @ApiTags('Users')
@@ -59,7 +58,7 @@ export class UsersController {
   @ApiBearerAuth()
   @Post('/replyCommentPost')
   async replyCommentPost(
-    @Body() body: CommentDto,
+    @Body() body: ReplyCommentDto,
     @Res() res: Response,
     @Req() req: any,
   ) {

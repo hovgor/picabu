@@ -16,6 +16,7 @@ import { ReactionIconsEntityBase } from '../reaction-icons/entity/reaction.icons
 import { TagsPostEntityBase } from 'src/modules/tags/entity/tags.for.posts.entity';
 import { UploadFileEntityBase } from '../upload_file/entity/upload_file.entity';
 import { FavoritsEntityBase } from './favorite.post.entity';
+import { CommentsEntityBase } from 'src/modules/users/entity/comments.entity';
 
 @Entity({ schema: 'default', name: 'Posts' })
 export class PostsEntityBase extends BaseEntity {
@@ -61,6 +62,13 @@ export class PostsEntityBase extends BaseEntity {
   })
   @JoinTable()
   tagsEntity: TagsPostEntityBase[];
+
+  @OneToMany(() => CommentsEntityBase, (comment) => comment.postId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  commentsEntity: CommentsEntityBase[];
 
   @OneToMany(
     () => ReactionIconsEntityBase,
