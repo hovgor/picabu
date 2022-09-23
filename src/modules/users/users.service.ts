@@ -23,30 +23,44 @@ import { ReactionsDto } from './dto/reactions.dto';
 import { BlockedEntityBase } from './entity/blocked.entity';
 import { ReplyCommentDto } from './dto/comment.dto';
 import { CommentDto } from './dto/comment.one.dto';
+import { CommentsReactionsDto } from './dto/comments.reactions.dto';
+import { followUnfollowDto } from './dto/follow.unfollow.dto';
+import { FeedDto } from './dto/feed.dto';
+import { PagedSearchDto } from 'src/shared/search/paged.search.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UsersEntityBase)
     private usersRepository: Repository<UsersEntityBase>,
+
     @InjectRepository(BlockedEntityBase)
     private blockedListRepository: Repository<BlockedEntityBase>,
+
     @InjectRepository(ReactionsEntityBase)
     private postsReactionRepository: Repository<ReactionsEntityBase>,
+
     @InjectRepository(PostsEntityBase)
     private postsRepository: Repository<PostsEntityBase>,
+
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
+
     @InjectRepository(CommentsEntityBase)
     private commentRepository: Repository<CommentsEntityBase>,
+
     @InjectRepository(CommentsReactionsEntityBase)
     private commentReactionRepository: Repository<CommentsReactionsEntityBase>,
+
     @InjectRepository(UserFollowEntitiyBase)
     private userFollowRepository: Repository<UserFollowEntitiyBase>,
+
     @InjectRepository(SubscribeGroupEntityBase)
     private subscribeGroupRepository: Repository<SubscribeGroupEntityBase>,
+
     @Inject(GroupsService)
     private readonly groupsService: GroupsService,
+
     @InjectRepository(PostsEntityBase)
     private readonly postRepository: Repository<PostsEntityBase>,
   ) {}
@@ -142,10 +156,11 @@ export class UsersService {
       }
 
       const ifReacted = await this.postsReactionRepository.findOne({
-        where: { userId: userAuth.id },
+        where: { userId: userAuth.id, postId: body.postId },
       });
+
       if (ifReacted !== null) {
-        if (ifReacted.reactionType == body.reactionType) {
+        if (ifReacted.reactionType === body.reactionType) {
           return {
             data: null,
             error: false,
@@ -153,7 +168,6 @@ export class UsersService {
           };
         }
       }
-      // const data = { userId, postId, reactionType };
       const reacted = await this.postsReactionRepository.upsert(
         {
           userId: userAuth.id,
@@ -161,16 +175,31 @@ export class UsersService {
           reactionType: body.reactionType,
         },
         {
-          conflictPaths: ['user_id', 'post_id'],
+          conflictPaths: ['userId', 'postId'],
           skipUpdateIfNoValuesChanged: true,
         },
       );
-      const reactionsCount = await this.postsRepository
-        .createQueryBuilder()
-        .update(this.postsRepository)
-        .set({ rating: () => `rating + ${body.reactionType}` });
       if (!reacted) throw new Error('Reaction was not Counted');
-      return reacted;
+
+      if (body.reactionType === 0) {
+        await this.postsReactionRepository.delete(ifReacted.id);
+        return {
+          data: null,
+          error: false,
+          message:
+            'reactied type is 0 when is deleted from posts reactions repository',
+        };
+      }
+
+      await this.postRepository.update(
+        { id: post.id },
+        { rating: post.rating + body.reactionType },
+      );
+      return {
+        data: reacted.identifiers,
+        error: false,
+        message: 'add reaction + & -',
+      };
     } catch (error) {
       Logger.log('error=> react post function!!', error);
       throw error;
@@ -238,18 +267,17 @@ export class UsersService {
     }
   }
 
-  async reactComment(body: any, request: any) {
+  async reactComment(body: CommentsReactionsDto, request: any) {
     try {
       const userAuth = await this.authService.verifyToken(request);
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
-      const { userId, commentId, reactionType } = body;
       const ifReacted = await this.commentReactionRepository.findOne({
-        where: { userId: userId },
+        where: { userId: userAuth.id, commentId: body.commentId },
       });
       if (ifReacted !== null) {
-        if (ifReacted.reactionType == reactionType) {
+        if (ifReacted.reactionType === body.reactionType) {
           return {
             data: null,
             error: false,
@@ -257,21 +285,45 @@ export class UsersService {
           };
         }
       }
+
       const reacted = await this.commentReactionRepository.upsert(
         {
-          userId: userId,
-          commentId: commentId,
-          reactionType: reactionType,
+          userId: userAuth.id,
+          commentId: body.commentId,
+          reactionType: body.reactionType,
         },
         {
-          conflictPaths: ['user_id', 'comment_id'],
+          conflictPaths: ['userId', 'commentId'],
           skipUpdateIfNoValuesChanged: true,
         },
       );
+
       if (!reacted) throw new Error('Reaction was not Counted');
-      return reacted;
+      if (body.reactionType === 0) {
+        await this.commentReactionRepository.delete(ifReacted.id);
+        return {
+          data: null,
+          error: false,
+          message:
+            'reactied type is 0 when is deleted from posts reactions repository',
+        };
+      }
+
+      const commentary = await this.commentRepository.findOne({
+        where: { id: body.commentId },
+      });
+
+      await this.commentRepository.update(
+        { id: commentary.id },
+        { rating: commentary.rating + body.reactionType },
+      );
+      return {
+        data: reacted.identifiers,
+        error: false,
+        message: 'add reaction + & -',
+      };
     } catch (error) {
-      Logger.log('error=> react post function!!', error);
+      Logger.log('error=> react comment function!!', error);
       throw error;
     }
   }
@@ -348,18 +400,23 @@ export class UsersService {
     }
   }
 
-  async unfollowUser(userId: number, followToId: number) {
+  async unfollowUser(data: followUnfollowDto, request: any) {
     try {
-      const unFollowed = this.userFollowRepository
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const unFollowed = await this.userFollowRepository
         .createQueryBuilder()
         .delete()
-        .where(`userId = ${userId} && followToId = ${followToId}`)
+        .where({ userId: user.id, followToId: data.followToId })
         .execute();
-      if (!unFollowed) {
+
+      if (!unFollowed.affected) {
         return {
           data: null,
-          error: false,
-          message: "User doesn't follow to user you want to unfollow from",
+          error: true,
+          message: 'The user cannot unsubscribe because he is not subscribed.',
         };
       }
       return { data: null, error: false, message: 'Successfully Unfollowed' };
@@ -369,12 +426,22 @@ export class UsersService {
     }
   }
 
-  async followUser(userId: number, followToId: number) {
+  async followUser(data: followUnfollowDto, request: any) {
     try {
+      const user: UsersEntityBase = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const validUser = await this.usersRepository.findOne({
+        where: { id: data.followToId },
+      });
+      if (!validUser) {
+        throw new NotFoundException('User is not exist!!!');
+      }
       const followUser = this.userFollowRepository.save(
         this.userFollowRepository.create({
-          userId: userId,
-          followToId: followToId,
+          userId: user.id,
+          followToId: data.followToId,
         }),
       );
       return {
@@ -388,32 +455,51 @@ export class UsersService {
     }
   }
 
-  async getFeed(param: string, body: any) {
+  async getFeed(status: string, body: FeedDto, request: any) {
     try {
       let feed;
       let actual = '';
-      if (body.actual === true) actual = 'created_date';
-      const userId = body.id;
-      if (param === 'new') {
-        feed = this.postsRepository
-          .createQueryBuilder('Posts')
-          .orderBy('created_date', 'DESC');
+      if (body.actual === true) actual = 'createdAt';
+
+      if (status === 'new') {
+        feed = await this.postsRepository
+          .createQueryBuilder('post')
+          .orderBy('post.createdAt', 'DESC')
+          .getManyAndCount();
       }
-      if (param === 'top') {
-        feed = this.postsRepository
-          .createQueryBuilder('Posts')
-          .orderBy('rating', 'DESC')
-          .addOrderBy(`${actual}, 'DESC'`);
+      if (status === 'top') {
+        feed = await this.postsRepository
+          .createQueryBuilder('post')
+          .orderBy('post.rating', 'DESC')
+          .getMany();
       }
       //need to maintain--------------------------------------
-      if (param === 'myFeed') {
-        const followings = this.userFollowRepository
-          .createQueryBuilder('user_following')
-          .where(`user_id = ${userId}`);
-        feed = this.postsRepository
-          .createQueryBuilder('Posts')
-          .where(`created_by IN ${followings}`)
-          .orderBy('created_date', 'DESC');
+      if (status === 'myFeed') {
+        let user: UsersEntityBase;
+        if (request) {
+          const userValid: UsersEntityBase = await this.authService.verifyToken(
+            request,
+          );
+          if (!userValid) {
+            throw new UnauthorizedException('User not authorized!!!');
+          }
+          user = userValid;
+        }
+        const followings: UserFollowEntitiyBase[] =
+          await this.userFollowRepository
+            .createQueryBuilder('user_following')
+            .where({ userId: user.id })
+            .getMany();
+        feed = [];
+
+        for (let i = 0; i < followings.length; ++i) {
+          const post = await this.postRepository.find({
+            where: { userId: followings[i].followToId },
+          });
+          if (post[0]) {
+            feed.push(post);
+          }
+        }
       }
       //------------------------------------------------------
       return { data: feed, error: false, message: 'User is unsigned.' };
@@ -493,6 +579,30 @@ export class UsersService {
       return blockedList;
     } catch (error) {
       Logger.log('get blocked list function ', error);
+      throw error;
+    }
+  }
+
+  // get comment of the day
+  async getCommentOfTheDay(query: PagedSearchDto) {
+    try {
+      const newDate = new Date();
+      newDate.setDate(newDate.getDate() - 1);
+      const comments = await this.commentRepository
+        .createQueryBuilder('comment')
+        .limit(query.limit)
+        .offset(query.offset)
+        .where('comment.createdAt > :date', { date: newDate })
+        .orderBy(`comment.rating`, 'DESC')
+        .getMany();
+
+      return {
+        data: comments,
+        error: false,
+        message: 'This is comment of the day.',
+      };
+    } catch (error) {
+      Logger.log('error=> get comment of the day function ', error);
       throw error;
     }
   }

@@ -6,12 +6,6 @@ export class CommentsReactionsDto {
   @IsNumber()
   @IsNotEmpty()
   @IsOptional()
-  userId: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty()
-  @IsOptional()
   commentId: number;
 
   @ApiProperty()

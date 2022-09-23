@@ -10,10 +10,3 @@ export class FeedDto {
   @IsBoolean()
   actual: boolean;
 }
-
-export class FeedParamsDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  status: string;
-}

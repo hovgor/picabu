@@ -18,6 +18,7 @@ import * as securePin from 'secure-pin';
 const mailer = require('../../../shared/email/mail.sender');
 import { HashPassword } from 'src/shared/password-hash/hash.password';
 import { EditProfileDto } from '../dto/edit.profile.dto';
+import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 
 @Injectable()
 export class SettingsService {
@@ -31,6 +32,9 @@ export class SettingsService {
     @Inject(forwardRef(() => HashPassword))
     private readonly passwordHashing: HashPassword,
     private readonly userValidator: UserValidator,
+
+    @InjectRepository(PostsEntityBase)
+    private readonly postsRepository: Repository<PostsEntityBase>,
   ) {}
 
   // change Profile Photo
@@ -305,6 +309,28 @@ export class SettingsService {
       return { data: null, error: false, message: 'Messages sent.' };
     } catch (error) {
       Logger.log('error=> users help center function ', error);
+      throw error;
+    }
+  }
+
+  async getMyReatingCount(request: any) {
+    try {
+      const userAuth: UsersEntityBase = await this.authService.verifyToken(
+        request,
+      );
+      if (!userAuth) {
+        throw new UnauthorizedException('User not authorized!!!');
+      }
+      const posts: PostsEntityBase[] = await this.postsRepository.find({
+        where: { userId: userAuth.id },
+      });
+      let count = 0;
+      posts.forEach((element) => {
+        count += element.rating;
+      });
+      return { data: count, error: false, message: 'reating count' };
+    } catch (error) {
+      Logger.log('error=> get my reating count function ', error);
       throw error;
     }
   }

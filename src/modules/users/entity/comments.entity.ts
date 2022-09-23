@@ -1,4 +1,3 @@
-import { AuthEntityBase } from 'src/auth/entity/auth.entity';
 import { PostsEntityBase } from '../../posts/entity/posts.entity';
 import {
   BaseEntity,
@@ -6,11 +5,14 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UsersEntityBase } from './users.entity';
+import { CommentsReactionsEntityBase } from './comments.reactions.entity';
 
 @Entity({ schema: 'default', name: 'Posts_comments' })
 export class CommentsEntityBase extends BaseEntity {
@@ -31,8 +33,22 @@ export class CommentsEntityBase extends BaseEntity {
   @Column({ name: 'post_id' })
   postId: number;
 
+  @OneToMany(
+    () => CommentsReactionsEntityBase,
+    (commentReaction) => commentReaction.userId,
+    {
+      onDelete: 'CASCADE',
+      nullable: true,
+    },
+  )
+  @JoinTable()
+  commentsEntity: CommentsReactionsEntityBase[];
+
   @Column({ nullable: false })
   comment: string;
+
+  @Column({ default: 0, nullable: true })
+  rating: number;
 
   @Column({ nullable: true, default: 0 })
   parentCommentId: number;

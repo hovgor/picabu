@@ -17,6 +17,8 @@ import {
 import { SubscribeGroupEntityBase } from './subscribe.group.entity';
 import { BlockedEntityBase } from './blocked.entity';
 import { CommentsEntityBase } from './comments.entity';
+import { ReactionsEntityBase } from './reactions.entity';
+import { CommentsReactionsEntityBase } from './comments.reactions.entity';
 
 @Entity({ schema: 'default', name: 'Users' })
 export class UsersEntityBase extends BaseEntity {
@@ -116,6 +118,24 @@ export class UsersEntityBase extends BaseEntity {
   })
   @JoinTable()
   commentsEntity: CommentsEntityBase[];
+
+  @OneToMany(
+    () => CommentsReactionsEntityBase,
+    (commentReaction) => commentReaction.userId,
+    {
+      onDelete: 'CASCADE',
+      nullable: true,
+    },
+  )
+  @JoinTable()
+  commentsReactionEntity: CommentsReactionsEntityBase[];
+
+  @OneToMany(() => ReactionsEntityBase, (reaction) => reaction.userId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  reactionsEntity: ReactionsEntityBase[];
 
   @CreateDateColumn({
     name: 'created_date',

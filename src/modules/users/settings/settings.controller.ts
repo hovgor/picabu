@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   Param,
   ParseIntPipe,
@@ -177,6 +178,17 @@ export class settingsController {
         req,
       );
       return res.status(HttpStatus.ACCEPTED).json(helpCenter);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @Get('/myReatingCount')
+  async myReatingCount(@Req() req: any, @Res() res: Response) {
+    try {
+      const reatingCount = await this.settingsService.getMyReatingCount(req);
+      return res.status(HttpStatus.OK).json(reatingCount);
     } catch (error) {
       throw error;
     }

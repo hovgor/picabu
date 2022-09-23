@@ -170,27 +170,27 @@ export class PostsController {
     }
   }
 
-  // get posts by attachments
-  @UsePipes(new ValidationPipe())
-  // @ApiBearerAuth()
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description:
-      'The body shows offset and limit, optional fields. In order to find a post there is a beginning field, get by attachment name. If all inputs null endpoint get all.',
-  })
-  @Get('/searchByAttachments')
-  async getPostByAttachmentsSearch(
-    @Req() req: any,
-    @Res() res: Response,
-    @Query() query: FilterSearchDto,
-  ) {
-    try {
-      // const search = await this.postsService.searchByTagsPost(query, req);
-      // return res.status(HttpStatus.OK).json(search);
-    } catch (error) {
-      throw error;
-    }
-  }
+  // // get posts by attachments
+  // @UsePipes(new ValidationPipe())
+  // // @ApiBearerAuth()
+  // @ApiResponse({
+  //   status: HttpStatus.OK,
+  //   description:
+  //     'The body shows offset and limit, optional fields. In order to find a post there is a beginning field, get by attachment name. If all inputs null endpoint get all.',
+  // })
+  // @Get('/searchByAttachments')
+  // async getPostByAttachmentsSearch(
+  //   @Req() req: any,
+  //   @Res() res: Response,
+  //   @Query() query: FilterSearchDto,
+  // ) {
+  //   try {
+  //     // const search = await this.postsService.searchByTagsPost(query, req);
+  //     // return res.status(HttpStatus.OK).json(search);
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
   // get posts
   @UsePipes(new ValidationPipe())

@@ -5,11 +5,6 @@ export class followUnfollowDto {
   @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
-  userId: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty()
   followToId: number;
 
   @ApiProperty()

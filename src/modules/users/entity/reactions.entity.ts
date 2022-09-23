@@ -11,6 +11,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   Unique,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { UsersEntityBase } from './users.entity';
 
@@ -20,10 +22,18 @@ export class ReactionsEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false })
+  @ManyToOne(() => UsersEntityBase, (reactions) => reactions.reactionsEntity, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  @Column({ name: 'user_id' })
   userId: number;
 
-  @Column({ nullable: false })
+  @ManyToOne(() => PostsEntityBase, (reactions) => reactions.reactionsEntity, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  @Column({ name: 'post_id' })
   postId: number;
 
   @Column({ nullable: false })

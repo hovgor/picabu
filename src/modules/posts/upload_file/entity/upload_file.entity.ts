@@ -18,9 +18,13 @@ export class UploadFileEntityBase extends BaseEntity {
   @Column({ default: null, nullable: true })
   path: string;
 
-  @ManyToOne(() => PostsEntityBase, (postEntity) => postEntity.attachment, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(
+    () => PostsEntityBase,
+    (postEntity) => postEntity.uploadFileEntity,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn()
   @Column({ name: 'post_id' })
   postId: number;
