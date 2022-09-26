@@ -9,7 +9,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   JoinTable,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -19,6 +21,7 @@ import { BlockedEntityBase } from './blocked.entity';
 import { CommentsEntityBase } from './comments.entity';
 import { ReactionsEntityBase } from './reactions.entity';
 import { CommentsReactionsEntityBase } from './comments.reactions.entity';
+import { NotificationEntityBase } from '../notification/entity/notification.entity';
 
 @Entity({ schema: 'default', name: 'Users' })
 export class UsersEntityBase extends BaseEntity {
@@ -136,6 +139,20 @@ export class UsersEntityBase extends BaseEntity {
   })
   @JoinTable()
   reactionsEntity: ReactionsEntityBase[];
+
+  @OneToMany(() => NotificationEntityBase, (reaction) => reaction.userId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  notificationEntity: NotificationEntityBase[];
+
+  // @ManyToOne(() => NotificationEntityBase, (user) => user.followUserEntity, {
+  //   onDelete: 'CASCADE',
+  // })
+  // @JoinColumn()
+  // @Column({ nullable: true, name: 'follow_user_id' })
+  // followUserId: number;
 
   @CreateDateColumn({
     name: 'created_date',

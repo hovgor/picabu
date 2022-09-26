@@ -132,7 +132,6 @@ export class settingsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() body: ChangePasswordDto,
     @Res() res: Response,
-    @Req() req: any,
   ) {
     try {
       const id = body.id;
@@ -142,7 +141,6 @@ export class settingsController {
         id,
         password,
         newPassword,
-        req,
       );
       res.status(HttpStatus.OK).json(changePassword);
     } catch (error) {

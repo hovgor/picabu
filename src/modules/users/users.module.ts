@@ -20,6 +20,9 @@ import { PostsEntityBase } from '../posts/entity/posts.entity';
 import { BlockedEntityBase } from './entity/blocked.entity';
 import { ProfileService } from './profile/profile.service';
 import { ProfileController } from './profile/profile.controller';
+import { NotificationService } from './notification/notification.service';
+import { NotificationController } from './notification/notification.controller';
+import { NotificationEntityBase } from './notification/entity/notification.entity';
 
 @Module({
   imports: [
@@ -33,6 +36,7 @@ import { ProfileController } from './profile/profile.controller';
       UserFollowEntitiyBase,
       PostsEntityBase,
       BlockedEntityBase,
+      NotificationEntityBase,
     ]),
     forwardRef(() => AuthModule),
     GroupsModule,
@@ -44,12 +48,14 @@ import { ProfileController } from './profile/profile.controller';
     ProvidersService,
     SettingsService,
     ProfileService,
+    NotificationService,
   ],
   controllers: [
     UsersController,
     settingsController,
     ProvidersController,
     ProfileController,
+    NotificationController,
   ],
   exports: [UsersService, SettingsService, ProvidersService, ProfileService],
 })

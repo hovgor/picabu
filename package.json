@@ -28,8 +28,10 @@
     "@nestjs/microservices": "^9.0.11",
     "@nestjs/passport": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
+    "@nestjs/platform-socket.io": "^9.1.2",
     "@nestjs/swagger": "^6.0.5",
     "@nestjs/typeorm": "^9.0.1",
+    "@nestjs/websockets": "^9.1.2",
     "@nestjsi/class-validator": "^0.2.2",
     "@sendgrid/mail": "^7.7.0",
     "bcrypt": "^5.0.1",
@@ -49,6 +51,7 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "secure-pin": "^1.0.14",
+    "socket.io": "^4.5.2",
     "typeorm": "^0.3.7",
     "uuid": "^8.3.2",
     "webpack": "^5.74.0"

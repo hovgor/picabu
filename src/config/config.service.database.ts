@@ -21,6 +21,7 @@ import { TagsPostEntityBase } from 'src/modules/tags/entity/tags.for.posts.entit
 import { TagsGroupEntityBase } from 'src/modules/tags/entity/tags.for.group.entity';
 import { BlockedEntityBase } from 'src/modules/users/entity/blocked.entity';
 import { CommentsReactionsEntityBase } from 'src/modules/users/entity/comments.reactions.entity';
+import { NotificationEntityBase } from 'src/modules/users/notification/entity/notification.entity';
 
 @Injectable()
 export class DatabaseConfigService implements TypeOrmOptionsFactory {
@@ -65,6 +66,7 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
         TagsNameEntityBase,
         BlockedEntityBase,
         CommentsReactionsEntityBase,
+        NotificationEntityBase,
       ],
       // entities: [process.cwd(), 'entity/**/*.pg.entity.{js, ts}'],
       synchronize: true,

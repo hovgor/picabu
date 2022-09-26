@@ -458,8 +458,8 @@ export class UsersService {
   async getFeed(status: string, body: FeedDto, request: any) {
     try {
       let feed;
-      let actual = '';
-      if (body.actual === true) actual = 'createdAt';
+      // let actual = '';
+      // if (body.actual === true) actual = 'createdAt';
 
       if (status === 'new') {
         feed = await this.postsRepository

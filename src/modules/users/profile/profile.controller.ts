@@ -1,20 +1,8 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpStatus,
-  Param,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Req, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { ProfileService } from './profile.service';
-import {
-  getprofileDataDto,
-  getLikedDislikedPostsCountParam,
-  getLikedDislikedPostsParam,
-} from '../dto/profile.dto';
+import { getprofileDataDto } from '../dto/profile.dto';
 
 @ApiTags('Profile')
 @Controller('profile')

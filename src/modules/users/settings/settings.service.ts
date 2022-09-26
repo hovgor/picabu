@@ -142,10 +142,10 @@ export class SettingsService {
       }
 
       const pin = securePin.generatePinSync(6);
-      const userData = {
-        email: email,
-        pin,
-      };
+      // const userData = {
+      //   email: email,
+      //   pin,
+      // };
       const message = {
         to: email,
         subject: 'Verify accaunt',
@@ -153,7 +153,7 @@ export class SettingsService {
         html: `<h1>Your pin code => ${pin}</h1>`,
       };
 
-      const emailSent = mailer(message);
+      mailer(message);
 
       await client.set(email, pin, {
         EX: 60 * 60 * 24, //a day in seconds
@@ -209,12 +209,7 @@ export class SettingsService {
     }
   }
 
-  async changePassword(
-    id: number,
-    password: string,
-    newPassword: string,
-    req: any,
-  ) {
+  async changePassword(id: number, password: string, newPassword: string) {
     try {
       if (password == newPassword)
         throw new Error(
