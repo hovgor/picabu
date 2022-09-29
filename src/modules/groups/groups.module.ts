@@ -10,6 +10,7 @@ import { TagsPostEntityBase } from '../tags/entity/tags.for.posts.entity';
 import { TagsNameEntityBase } from '../tags/entity/tags.name.entity';
 import { TagsGroupEntityBase } from '../tags/entity/tags.for.group.entity';
 import { SubscribeGroupEntityBase } from '../users/entity/subscribe.group.entity';
+import { PostsToGroupEntityBase } from '../posts/entity/group.post.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -18,6 +19,7 @@ import { SubscribeGroupEntityBase } from '../users/entity/subscribe.group.entity
       TagsNameEntityBase,
       TagsGroupEntityBase,
       SubscribeGroupEntityBase,
+      PostsToGroupEntityBase,
     ]),
     forwardRef(() => TagsModule),
     AuthModule,

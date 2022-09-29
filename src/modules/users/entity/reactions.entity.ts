@@ -9,7 +9,7 @@ import {
   JoinTable,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  // UpdateDateColumn,
   Unique,
   JoinColumn,
   ManyToOne,
@@ -26,14 +26,14 @@ export class ReactionsEntityBase extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ name: 'user_id' })
+  // @Column({ name: 'user_id' })
   userId: number;
 
   @ManyToOne(() => PostsEntityBase, (reactions) => reactions.reactionsEntity, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ name: 'post_id' })
+  // @Column({ name: 'post_id' })
   postId: number;
 
   @Column({ nullable: false })
@@ -60,11 +60,11 @@ export class ReactionsEntityBase extends BaseEntity {
   })
   public createdAt: Date;
 
-  @UpdateDateColumn({
-    name: 'updated_date',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    onUpdate: 'CURRENT_TIMESTAMP(6)',
-  })
-  public updatedAt: Date;
+  // @UpdateDateColumn({
+  //   name: 'updated_date',
+  //   type: 'timestamp',
+  //   default: () => 'CURRENT_TIMESTAMP(6)',
+  //   onUpdate: 'CURRENT_TIMESTAMP(6)',
+  // })
+  // public updatedAt: Date;
 }

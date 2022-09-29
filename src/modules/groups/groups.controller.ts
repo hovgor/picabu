@@ -7,6 +7,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   Req,
   Res,
   UsePipes,
@@ -14,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { FilterSearchDto } from '../posts/dto/filter.search.dto';
 import { CreateGroupDto } from './dto/create.group.dto';
 import { GroupsService } from './groups.service';
 
@@ -64,10 +66,21 @@ export class GroupsController {
   }
 
   @UsePipes(new ValidationPipe())
-  @Get(':id')
-  async getGroups(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+  @Get('getGroups')
+  async getGroups(@Query() query: FilterSearchDto, @Res() res: Response) {
     try {
-      const groups = await this.groupsService.getGroups(id);
+      const groups = await this.groupsService.getGroups(query);
+      res.status(HttpStatus.OK).json(groups);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @UsePipes(new ValidationPipe())
+  @Get(':id')
+  async getGroup(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    try {
+      const groups = await this.groupsService.getGroup(id);
       res.status(HttpStatus.OK).json(groups);
     } catch (error) {
       throw error;

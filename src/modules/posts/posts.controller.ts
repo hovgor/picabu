@@ -23,6 +23,8 @@ import { ReactionTypeForPostDto } from './dto/reaction.type.dto';
 import { PostsService } from './posts.service';
 import { ReactionIconsService } from './reaction-icons/reaction-icons.service';
 import { TagsService } from '../tags/tags.service';
+import { AddToGroupDto } from './dto/add.to.group.dto';
+import { PagedSearchDto } from 'src/shared/search/paged.search.dto';
 
 @Controller('posts')
 @ApiTags('Posts')
@@ -130,6 +132,27 @@ export class PostsController {
   }
 
   @UsePipes(new ValidationPipe())
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description:
+      'Add a post to the group . It is necessary to insert the group ID and post id into the body.',
+  })
+  @Post('addToGroup')
+  async addToGroup(
+    @Res() res: Response,
+    @Req() req,
+    @Body() body: AddToGroupDto,
+  ) {
+    try {
+      const favorite = await this.postsService.addPostToGroup(body, req);
+      return res.status(HttpStatus.ACCEPTED).json(favorite);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @UsePipes(new ValidationPipe())
   @ApiResponse({
     status: HttpStatus.OK,
     description:
@@ -143,6 +166,22 @@ export class PostsController {
   ) {
     try {
       const search = await this.postsService.searchByTitlePost(query, req);
+      return res.status(HttpStatus.OK).json(search);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @UsePipes(new ValidationPipe())
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description:
+      'The body shows offset and limit, optional fields. get by posts. If all inputs null endpoint get all.',
+  })
+  @Get('/getPosts')
+  async getPosts(@Res() res: Response, @Query() query: PagedSearchDto) {
+    try {
+      const search = await this.postsService.getPosts(query);
       return res.status(HttpStatus.OK).json(search);
     } catch (error) {
       throw error;

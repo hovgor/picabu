@@ -235,7 +235,6 @@ export class AuthService {
   async emailVerifyWhitMail(email: string) {
     try {
       const pin = securePin.generatePinSync(6);
-      console.log(11111, pin);
 
       const verifyEmail = this.userValidator.userEmail(email);
 

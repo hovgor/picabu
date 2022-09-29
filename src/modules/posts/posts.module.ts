@@ -17,6 +17,8 @@ import { TagsModule } from '../tags/tags.module';
 import { TagsNameEntityBase } from '../tags/entity/tags.name.entity';
 import { TagsPostEntityBase } from '../tags/entity/tags.for.posts.entity';
 import { TagsGroupEntityBase } from '../tags/entity/tags.for.group.entity';
+import { GroupsEntityBase } from '../groups/entity/groups.entity';
+import { PostsToGroupEntityBase } from './entity/group.post.entity';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { TagsGroupEntityBase } from '../tags/entity/tags.for.group.entity';
       TagsNameEntityBase,
       TagsPostEntityBase,
       TagsGroupEntityBase,
+      GroupsEntityBase,
+      PostsToGroupEntityBase,
     ]),
     UsersModule,
     AuthModule,

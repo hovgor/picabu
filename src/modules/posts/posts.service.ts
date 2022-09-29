@@ -20,12 +20,18 @@ import { UploadFileEntityBase } from './upload_file/entity/upload_file.entity';
 import { UploadFileService } from './upload_file/upload_file.service';
 import { TagsPostEntityBase } from '../tags/entity/tags.for.posts.entity';
 import { TagsNameEntityBase } from '../tags/entity/tags.name.entity';
+import { AddToGroupDto } from './dto/add.to.group.dto';
+import { GroupsEntityBase } from '../groups/entity/groups.entity';
+import { PostsToGroupEntityBase } from './entity/group.post.entity';
+import { PagedSearchDto } from 'src/shared/search/paged.search.dto';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(PostsEntityBase)
     private postsRepository: Repository<PostsEntityBase>,
+    @InjectRepository(GroupsEntityBase)
+    private groupsRepository: Repository<GroupsEntityBase>,
     @InjectRepository(TagsPostEntityBase)
     private tagsPostRepository: Repository<TagsPostEntityBase>,
     @InjectRepository(TagsNameEntityBase)
@@ -40,6 +46,8 @@ export class PostsService {
     private readonly tagsService: TagsService,
     @Inject(forwardRef(() => CategoriesForFavoriteService))
     private readonly categoriesForFavoritesService: CategoriesForFavoriteService,
+    @InjectRepository(PostsToGroupEntityBase)
+    private postToGroupRepository: Repository<PostsToGroupEntityBase>,
   ) {}
 
   // create post
@@ -103,14 +111,38 @@ export class PostsService {
     }
   }
 
+  async getPosts(query: PagedSearchDto) {
+    try {
+      const posts = await this.postsRepository
+        .createQueryBuilder('posts')
+        .leftJoinAndSelect('posts.uploadFileEntity', 'upload_fileId')
+        .leftJoinAndSelect('upload_fileId.postId', 'uploadFile')
+        .leftJoinAndSelect('posts.tagsEntity', 'tagsId')
+        .leftJoinAndSelect('tagsId.tag', 'tagsName')
+        .limit(query.limit)
+        .offset(query.offset)
+        .orderBy('posts.createdAt', 'DESC')
+        .getMany();
+      if (!posts[0]) {
+        throw new BadRequestException("Don't get posts!!!");
+      }
+      return { data: posts, error: false, message: 'Get posts.' };
+    } catch (error) {
+      Logger.log('error=> get posts function ', error);
+      throw error;
+    }
+  }
+
   async getPostById(id: number) {
     try {
       const post = await this.postsRepository
         .createQueryBuilder('post')
         .leftJoinAndSelect('post.uploadFileEntity', 'upload_fileId')
+        .leftJoinAndSelect('upload_fileId.postId', 'uploadFile')
         .leftJoinAndSelect('post.tagsEntity', 'tagsId')
-        .andWhere('upload_fileId.postId = :id', { id })
-        .andWhere('tagsId.post = :id', { id })
+        .leftJoinAndSelect('tagsId.tag', 'tagsName')
+        // .andWhere('upload_fileId.postId = :id', { id })
+        // .andWhere('tagsId.post = :id', { id })
         .where('post.id = :id', { id })
         .getOne();
       if (!post) {
@@ -166,6 +198,45 @@ export class PostsService {
       };
     } catch (error) {
       Logger.log('error=> add post to favorites function ', error);
+      throw error;
+    }
+  }
+
+  async addPostToGroup(data: AddToGroupDto, request: any) {
+    try {
+      const user = await this.authService.verifyToken(request);
+      if (!user) {
+        throw new UnauthorizedException('User not authorization!!!');
+      }
+
+      const group = await this.groupsRepository.findOne({
+        where: { id: data.groupId },
+      });
+      if (!group) {
+        throw new NotFoundException('The group is not found!!!');
+      }
+      const post = await this.postsRepository.findOne({
+        where: { id: data.postId },
+      });
+      if (!post) {
+        throw new NotFoundException('The post is not found!!!');
+      }
+      if (post.userId !== user.id) {
+        throw new UnauthorizedException('User is not authorized!!!');
+      }
+      const postToGroup = await this.postToGroupRepository.save(
+        this.postToGroupRepository.create({
+          postId: data.postId,
+          groupId: data.groupId,
+        }),
+      );
+      return {
+        data: postToGroup,
+        error: false,
+        message: 'Post add to group.',
+      };
+    } catch (error) {
+      Logger.log('error=> add post to group function ', error);
       throw error;
     }
   }

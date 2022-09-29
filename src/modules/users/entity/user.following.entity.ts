@@ -5,8 +5,8 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
+  OneToMany,
+  JoinTable,
 } from 'typeorm';
 import { UsersEntityBase } from './users.entity';
 
@@ -15,12 +15,15 @@ export class UserFollowEntitiyBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => UsersEntityBase, (user) => user.userEntity, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
   @Column({ nullable: true, name: 'user_id' })
   userId: number;
+
+  @OneToMany(() => UsersEntityBase, (user) => user.followId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  userEntity: UsersEntityBase[];
 
   @Column({ nullable: true, name: 'follow_to_id' })
   followToId: number;

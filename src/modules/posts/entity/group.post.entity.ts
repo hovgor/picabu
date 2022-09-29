@@ -1,18 +1,18 @@
-import { CategorieForFavoritsEntityBase } from 'src/modules/categories_for_favorite/entity/categorie.for.favorits.entity';
+// import { CategorieForFavoritsEntityBase } from 'src/modules/categories_for_favorite/entity/categorie.for.favorits.entity';
+import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
 import {
   BaseEntity,
-  // Column,
+  //   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  // UpdateDateColumn,
 } from 'typeorm';
 import { PostsEntityBase } from './posts.entity';
 
-@Entity({ schema: 'default', name: 'Favorite_posts' })
-export class FavoritsEntityBase extends BaseEntity {
+@Entity({ schema: 'default', name: 'Posts_to_groups' })
+export class PostsToGroupEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -20,19 +20,19 @@ export class FavoritsEntityBase extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  // @Column({ nullable: true, name: 'post_id' })
+  //   @Column({ nullable: true, name: 'post_id' })
   postId: number;
 
   @ManyToOne(
-    () => CategorieForFavoritsEntityBase,
-    (categories) => categories.categoriesEntity,
+    () => GroupsEntityBase,
+    (categories) => categories.postToGroupEntity,
     {
       onDelete: 'CASCADE',
     },
   )
   @JoinColumn()
-  // @Column({ nullable: true, name: 'categories_id' })
-  categoriesId: number;
+  //   @Column({ nullable: true, name: 'group_id' })
+  groupId: number;
 
   @CreateDateColumn({
     name: 'created_date',

@@ -10,7 +10,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  // UpdateDateColumn,
 } from 'typeorm';
 import { ReactionIconsEntityBase } from '../reaction-icons/entity/reaction.icons.entity';
 import { TagsPostEntityBase } from 'src/modules/tags/entity/tags.for.posts.entity';
@@ -38,14 +38,14 @@ export class PostsEntityBase extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ name: 'user_id' })
+  // @Column({ name: 'user_id' })
   userId: number;
 
   @ManyToOne(() => GroupsEntityBase, (group) => group.postsEntity, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ name: 'group_id', nullable: true })
+  // @Column({ name: 'group_id', nullable: true })
   groupId: number;
 
   @OneToMany(() => UploadFileEntityBase, (upload_file) => upload_file.postId, {
@@ -112,11 +112,11 @@ export class PostsEntityBase extends BaseEntity {
   })
   public createdAt: Date;
 
-  @UpdateDateColumn({
-    name: 'updated_date',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    onUpdate: 'CURRENT_TIMESTAMP(6)',
-  })
-  public updatedAt: Date;
+  // @UpdateDateColumn({
+  //   name: 'updated_date',
+  //   type: 'timestamp',
+  //   default: () => 'CURRENT_TIMESTAMP(6)',
+  //   onUpdate: 'CURRENT_TIMESTAMP(6)',
+  // })
+  // public updatedAt: Date;
 }

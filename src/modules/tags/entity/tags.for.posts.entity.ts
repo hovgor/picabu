@@ -1,13 +1,13 @@
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 import {
   BaseEntity,
-  Column,
+  // Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  // UpdateDateColumn,
 } from 'typeorm';
 import { TagsNameEntityBase } from './tags.name.entity';
 
@@ -20,14 +20,14 @@ export class TagsPostEntityBase extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ name: 'tag_id' })
+  // @Column({ name: 'tag_id' })
   tag: number;
 
   @ManyToOne(() => PostsEntityBase, (postEntity) => postEntity.tagsEntity, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ name: 'post_id' })
+  // @Column({ name: 'post_id' })
   post: number;
 
   @CreateDateColumn({
@@ -37,11 +37,11 @@ export class TagsPostEntityBase extends BaseEntity {
   })
   public createdAt: Date;
 
-  @UpdateDateColumn({
-    name: 'updated_date',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    onUpdate: 'CURRENT_TIMESTAMP(6)',
-  })
-  public updatedAt: Date;
+  // @UpdateDateColumn({
+  //   name: 'updated_date',
+  //   type: 'timestamp',
+  //   default: () => 'CURRENT_TIMESTAMP(6)',
+  //   onUpdate: 'CURRENT_TIMESTAMP(6)',
+  // })
+  // public updatedAt: Date;
 }

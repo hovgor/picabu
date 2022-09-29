@@ -22,6 +22,7 @@ import { CommentsEntityBase } from './comments.entity';
 import { ReactionsEntityBase } from './reactions.entity';
 import { CommentsReactionsEntityBase } from './comments.reactions.entity';
 import { NotificationEntityBase } from '../notification/entity/notification.entity';
+import { UserFollowEntitiyBase } from './user.following.entity';
 
 @Entity({ schema: 'default', name: 'Users' })
 export class UsersEntityBase extends BaseEntity {
@@ -153,6 +154,13 @@ export class UsersEntityBase extends BaseEntity {
   // @JoinColumn()
   // @Column({ nullable: true, name: 'follow_user_id' })
   // followUserId: number;
+
+  @ManyToOne(() => UserFollowEntitiyBase, (user) => user.userEntity, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  // @Column({ nullable: true, name: 'follow_id' })
+  followId: number;
 
   @CreateDateColumn({
     name: 'created_date',

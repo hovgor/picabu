@@ -11,12 +11,16 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserFollowEntitiyBase } from '../entity/user.following.entity';
 import { ReactionsEntityBase } from '../entity/reactions.entity';
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
+import { PagedSearchDto } from 'src/shared/search/paged.search.dto';
+import { UsersEntityBase } from '../entity/users.entity';
 
 @Injectable()
 export class ProfileService {
   constructor(
     @InjectRepository(UserFollowEntitiyBase)
     private userFollowRepository: Repository<UserFollowEntitiyBase>,
+    @InjectRepository(UsersEntityBase)
+    private usersRepository: Repository<UsersEntityBase>,
     @InjectRepository(ReactionsEntityBase)
     private reactionsRepository: Repository<ReactionsEntityBase>,
     @InjectRepository(PostsEntityBase)
@@ -97,29 +101,43 @@ export class ProfileService {
     }
   }
 
-  async getFollowers(req: any, body: any) {
+  async getFollowers(req: any, query: PagedSearchDto) {
     try {
       const userAuth = await this.authService.verifyToken(req);
-      const id = userAuth.id;
+
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
-      const followers = await this.userFollowRepository.find({
-        where: { followToId: id },
-      });
+      const followers = await this.userFollowRepository
+        .createQueryBuilder('followers')
+        .leftJoinAndSelect('followers.userEntity', 'followUsers')
+        .leftJoinAndSelect('followUsers.followId', 'followIdusers')
+        .limit(query.limit)
+        .offset(query.offset)
+        .orderBy('followers.createdAt', 'DESC')
+        .where('followers.followToId = :id', { id: userAuth.id })
+        .getMany();
+
+      if (!followers[0]) {
+        return {
+          data: null,
+          error: true,
+          message: "You don't have a followers.",
+        };
+      }
 
       return {
-        data: {
-          followers: followers,
-        },
+        data: followers,
+        error: false,
+        message: 'Its your followers.',
       };
     } catch (error) {
-      Logger.log("error=> Can't get disliked posts count", error);
+      Logger.log("error=> Can't get followers function", error);
       throw error;
     }
   }
 
-  async getFollowings(req: any, body: any) {
+  async getFollowings(req: any, query: PagedSearchDto) {
     try {
       const userAuth = await this.authService.verifyToken(req);
       const id = userAuth.id;

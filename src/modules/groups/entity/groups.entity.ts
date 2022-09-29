@@ -1,3 +1,4 @@
+import { PostsToGroupEntityBase } from 'src/modules/posts/entity/group.post.entity';
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 import { TagsGroupEntityBase } from 'src/modules/tags/entity/tags.for.group.entity';
 import { SubscribeGroupEntityBase } from 'src/modules/users/entity/subscribe.group.entity';
@@ -38,6 +39,13 @@ export class GroupsEntityBase extends BaseEntity {
   })
   @JoinTable()
   groupEntity: SubscribeGroupEntityBase[];
+
+  @OneToMany(() => PostsToGroupEntityBase, (group) => group.groupId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  postToGroupEntity: PostsToGroupEntityBase[];
 
   @Column({ default: null, nullable: true, unique: true })
   url: string;

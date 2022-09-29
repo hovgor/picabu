@@ -23,14 +23,14 @@ export class CommentsEntityBase extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ name: 'user_id' })
+  // @Column({ name: 'user_id' })
   userId: number;
 
   @ManyToOne(() => PostsEntityBase, (comment) => comment.commentsEntity, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ name: 'post_id' })
+  // @Column({ name: 'post_id' })
   postId: number;
 
   @OneToMany(

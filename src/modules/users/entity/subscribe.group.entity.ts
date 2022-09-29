@@ -1,11 +1,11 @@
 import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
 import {
   BaseEntity,
-  Column,
+  // Column,
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  // UpdateDateColumn,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
@@ -20,14 +20,14 @@ export class SubscribeGroupEntityBase extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ nullable: true, name: 'user_id' })
+  // @Column({ nullable: true, name: 'user_id' })
   userId: number;
 
   @ManyToOne(() => GroupsEntityBase, (group) => group.groupEntity, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ nullable: true, name: 'group_id' })
+  // @Column({ nullable: true, name: 'group_id' })
   groupId: number;
 
   @CreateDateColumn({
@@ -37,11 +37,11 @@ export class SubscribeGroupEntityBase extends BaseEntity {
   })
   public createdAt: Date;
 
-  @UpdateDateColumn({
-    name: 'updated_date',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    onUpdate: 'CURRENT_TIMESTAMP(6)',
-  })
-  public updatedAt: Date;
+  // @UpdateDateColumn({
+  //   name: 'updated_date',
+  //   type: 'timestamp',
+  //   default: () => 'CURRENT_TIMESTAMP(6)',
+  //   onUpdate: 'CURRENT_TIMESTAMP(6)',
+  // })
+  // public updatedAt: Date;
 }

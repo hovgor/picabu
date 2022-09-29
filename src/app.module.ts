@@ -7,7 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { CategoriesForFavoriteModule } from './modules/categories_for_favorite/categories_for_favorite.module';
 import { GroupsModule } from './modules/groups/groups.module';
-import { AppGateway } from './shared/gateway/app.gateway';
+import { GatewaysModule } from './shared/gateways/gateways.module';
 
 @Module({
   imports: [
@@ -18,7 +18,8 @@ import { AppGateway } from './shared/gateway/app.gateway';
     PostsModule,
     CategoriesForFavoriteModule,
     GroupsModule,
+    GatewaysModule,
   ],
-  providers: [DatabaseConfigService, AppGateway],
+  providers: [DatabaseConfigService],
 })
 export class AppModule {}

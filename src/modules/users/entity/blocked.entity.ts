@@ -22,7 +22,7 @@ export class BlockedEntityBase extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ nullable: true, name: 'blocked_user_id' })
+  // @Column({ nullable: true, name: 'blocked_user_id' })
   blockedUser: number;
 
   @CreateDateColumn({

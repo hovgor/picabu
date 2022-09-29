@@ -1,8 +1,17 @@
-import { Body, Controller, Get, HttpStatus, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { ProfileService } from './profile.service';
 import { getprofileDataDto } from '../dto/profile.dto';
+import { PagedSearchDto } from 'src/shared/search/paged.search.dto';
 
 @ApiTags('Profile')
 @Controller('profile')
@@ -59,9 +68,13 @@ export class ProfileController {
 
   @ApiBearerAuth()
   @Get('/getFollowers')
-  async getFollowers(@Body() body: any, @Res() res: Response, @Req() req: any) {
+  async getFollowers(
+    @Query() query: PagedSearchDto,
+    @Res() res: Response,
+    @Req() req: any,
+  ) {
     try {
-      const data = await this.profileService.getFollowers(req, body);
+      const data = await this.profileService.getFollowers(req, query);
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
       throw error;

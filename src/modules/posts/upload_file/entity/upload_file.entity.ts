@@ -26,7 +26,7 @@ export class UploadFileEntityBase extends BaseEntity {
     },
   )
   @JoinColumn()
-  @Column({ name: 'post_id' })
+  // @Column({ name: 'post_id' })
   postId: number;
 
   @CreateDateColumn({

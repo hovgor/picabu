@@ -23,14 +23,14 @@ export class CommentsReactionsEntityBase extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ nullable: true, name: 'user_id' })
+  // @Column({ nullable: true, name: 'user_id' })
   userId: number;
 
   @ManyToOne(() => CommentsEntityBase, (user) => user.commentsEntity, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ nullable: true, name: 'comment_id' })
+  // @Column({ nullable: true, name: 'comment_id' })
   commentId: number;
 
   @Column({ nullable: false })
@@ -40,7 +40,7 @@ export class CommentsReactionsEntityBase extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  @Column({ nullable: true, name: 'post_id' })
+  // @Column({ nullable: true, name: 'post_id' })
   postId: number;
 
   @CreateDateColumn({
