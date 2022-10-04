@@ -3,6 +3,6 @@ import { GatewaysService } from './gateways.service';
 import { GatewaysGateway } from './gateways.gateway';
 
 @Module({
-  providers: [GatewaysGateway, GatewaysService]
+  providers: [GatewaysGateway, GatewaysService],
 })
 export class GatewaysModule {}

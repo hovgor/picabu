@@ -10,8 +10,8 @@ import {
 } from 'typeorm';
 import { UsersEntityBase } from '../../entity/users.entity';
 
-@Entity({ schema: 'default', name: 'Notification' })
-export class NotificationEntityBase extends BaseEntity {
+@Entity({ schema: 'default', name: 'Follow_notification' })
+export class FollowNotificationEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

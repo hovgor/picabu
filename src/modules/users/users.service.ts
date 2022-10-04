@@ -27,6 +27,8 @@ import { CommentsReactionsDto } from './dto/comments.reactions.dto';
 import { followUnfollowDto } from './dto/follow.unfollow.dto';
 import { FeedDto } from './dto/feed.dto';
 import { PagedSearchDto } from 'src/shared/search/paged.search.dto';
+import { NotificationService } from './notification/notification.service';
+import { NotificationType } from 'src/shared/types/notification.type';
 
 @Injectable()
 export class UsersService {
@@ -60,6 +62,9 @@ export class UsersService {
 
     @Inject(GroupsService)
     private readonly groupsService: GroupsService,
+
+    @Inject(NotificationService)
+    private readonly notificationService: NotificationService,
 
     @InjectRepository(PostsEntityBase)
     private readonly postRepository: Repository<PostsEntityBase>,
@@ -148,9 +153,23 @@ export class UsersService {
         throw new UnauthorizedException('User not authorized!!!');
       }
 
-      const post = await this.postRepository.findOne({
-        where: { id: body.postId },
-      });
+      const post = await this.postRepository
+        .createQueryBuilder('post')
+        .leftJoinAndSelect('post.userId', 'user')
+        .where({ id: body.postId })
+        .select('post')
+        .addSelect([
+          'user.id',
+          'user.nicname',
+          'user.email',
+          'user.deviceId',
+          'user.providerId',
+          'user.profilePhotoUrl',
+          'user.userType',
+          'user.role',
+          'user.phone',
+        ])
+        .getOne();
       if (!post) {
         throw new NotFoundException('Post is not exist!!!');
       }
@@ -195,6 +214,12 @@ export class UsersService {
         { id: post.id },
         { rating: post.rating + body.reactionType },
       );
+      await this.notificationService.createPostNotification({
+        postId: body.postId,
+        userId: userAuth.id,
+        notificationType: NotificationType.like,
+        forUserId: post.userId['id'],
+      });
       return {
         data: reacted.identifiers,
         error: false,

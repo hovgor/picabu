@@ -14,7 +14,7 @@ import { Server, Socket } from 'socket.io';
     origin: '*',
   },
 })
-@WebSocketGateway()
+@WebSocketGateway(3000)
 export class GatewaysGateway {
   @WebSocketServer()
   server: Server;

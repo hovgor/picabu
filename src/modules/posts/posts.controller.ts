@@ -189,7 +189,6 @@ export class PostsController {
   }
 
   @UsePipes(new ValidationPipe())
-  // @ApiBearerAuth()
   @ApiResponse({
     status: HttpStatus.OK,
     description:
@@ -209,28 +208,6 @@ export class PostsController {
     }
   }
 
-  // // get posts by attachments
-  // @UsePipes(new ValidationPipe())
-  // // @ApiBearerAuth()
-  // @ApiResponse({
-  //   status: HttpStatus.OK,
-  //   description:
-  //     'The body shows offset and limit, optional fields. In order to find a post there is a beginning field, get by attachment name. If all inputs null endpoint get all.',
-  // })
-  // @Get('/searchByAttachments')
-  // async getPostByAttachmentsSearch(
-  //   @Req() req: any,
-  //   @Res() res: Response,
-  //   @Query() query: FilterSearchDto,
-  // ) {
-  //   try {
-  //     // const search = await this.postsService.searchByTagsPost(query, req);
-  //     // return res.status(HttpStatus.OK).json(search);
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
-
   // get posts
   @UsePipes(new ValidationPipe())
   @ApiResponse({
@@ -247,36 +224,4 @@ export class PostsController {
       throw error;
     }
   }
-
-  // get tags
-  // @UsePipes(new ValidationPipe())
-  //   @ApiResponse({
-  //   status: HttpStatus.OK,
-  //   description: 'Find posts by ID.',
-  // })
-  // @Get(':id')
-  // async gettags(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-  //   try {
-  //     const post = await this.postsService.getPostById(id);
-
-  //     return res.status(HttpStatus.OK).json(post);
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
-
-  // @UsePipes(new ValidationPipe())
-  // @Patch('like-count/:id')
-  // async likeCountPost(
-  //   @Param('id', ParseIntPipe) id: number,
-  //   @Res() res: Response,
-  // ) {
-  //   try {
-  //     const post = await this.postsService.getPostById(id);
-
-  //     return res.status(HttpStatus.OK).json(post);
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
 }

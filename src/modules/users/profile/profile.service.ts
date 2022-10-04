@@ -30,23 +30,26 @@ export class ProfileService {
   ) {}
 
   // Get Followers Count
-  async getFollowersCount(req: any, body: any) {
+  async getFollowersCount(req: any, query: PagedSearchDto) {
     try {
       const userAuth = await this.authService.verifyToken(req);
-      const id = userAuth.id;
 
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
       const followersCount = await this.userFollowRepository
-        .createQueryBuilder()
-        .where(`follow_to_id = ${id}`)
+        .createQueryBuilder('followers')
+        .leftJoinAndSelect('followers.followToId', 'followerUsers')
+        .limit(query.limit)
+        .offset(query.offset)
+        .orderBy('followers.createdAt', 'DESC')
+        .where('followers.followToId = :id', { id: userAuth.id })
         .getCount();
 
       return {
-        data: {
-          user: followersCount,
-        },
+        data: followersCount,
+        error: false,
+        message: 'Your followers count.',
       };
     } catch (error) {
       Logger.log("error=> Can't get followers count", error);
@@ -54,22 +57,26 @@ export class ProfileService {
     }
   }
 
-  async getFollowingsCount(req: any, body: any) {
+  async getFollowingsCount(req: any, query: PagedSearchDto) {
     try {
       const userAuth = await this.authService.verifyToken(req);
-      const id = userAuth.id;
+
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
-      const followingsCount = await this.userFollowRepository
-        .createQueryBuilder()
-        .where(`user_id = ${id}`)
+      const followersCount = await this.userFollowRepository
+        .createQueryBuilder('followings')
+        .leftJoinAndSelect('followings.followToId', 'followingsUsers')
+        .limit(query.limit)
+        .offset(query.offset)
+        .orderBy('followings.createdAt', 'DESC')
+        .where('followings.userId = :id', { id: userAuth.id })
         .getCount();
 
       return {
-        data: {
-          user: followingsCount,
-        },
+        data: followersCount,
+        error: false,
+        message: 'Your followings count.',
       };
     } catch (error) {
       Logger.log("error=> Can't get followings count", error);
@@ -108,14 +115,28 @@ export class ProfileService {
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
-      const followers = await this.userFollowRepository
+      const followers: UserFollowEntitiyBase[] = await this.userFollowRepository
         .createQueryBuilder('followers')
-        .leftJoinAndSelect('followers.userEntity', 'followUsers')
-        .leftJoinAndSelect('followUsers.followId', 'followIdusers')
+        .leftJoinAndSelect('followers.userId', 'followUsers')
         .limit(query.limit)
         .offset(query.offset)
         .orderBy('followers.createdAt', 'DESC')
         .where('followers.followToId = :id', { id: userAuth.id })
+        .select('followers')
+        .addSelect([
+          'followUsers.id',
+          'followUsers.nicname',
+          'followUsers.email',
+          'followUsers.deviceId',
+          'followUsers.providerId',
+          'followUsers.profilePhotoUrl',
+          'followUsers.provider',
+          'followUsers.userType',
+          'followUsers.role',
+          'followUsers.phone',
+          'followUsers.createdAt',
+          'followUsers.updatedAt',
+        ])
         .getMany();
 
       if (!followers[0]) {
@@ -140,21 +161,50 @@ export class ProfileService {
   async getFollowings(req: any, query: PagedSearchDto) {
     try {
       const userAuth = await this.authService.verifyToken(req);
-      const id = userAuth.id;
+
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
-      const followings = await this.userFollowRepository.find({
-        where: { userId: id },
-      });
+      const followings: UserFollowEntitiyBase[] =
+        await this.userFollowRepository
+          .createQueryBuilder('followings')
+          .leftJoinAndSelect('followings.followToId', 'followingUsers')
+          .limit(query.limit)
+          .offset(query.offset)
+          .orderBy('followings.createdAt', 'DESC')
+          .where('followings.userId = :id', { id: userAuth.id })
+          .select('followings')
+          .addSelect([
+            'followingUsers.id',
+            'followingUsers.nicname',
+            'followingUsers.email',
+            'followingUsers.deviceId',
+            'followingUsers.providerId',
+            'followingUsers.profilePhotoUrl',
+            'followingUsers.provider',
+            'followingUsers.userType',
+            'followingUsers.role',
+            'followingUsers.phone',
+            'followingUsers.createdAt',
+            'followingUsers.updatedAt',
+          ])
+          .getMany();
+
+      if (!followings[0]) {
+        return {
+          data: null,
+          error: true,
+          message: "You don't have a followings.",
+        };
+      }
 
       return {
-        data: {
-          followings: followings,
-        },
+        data: followings,
+        error: false,
+        message: 'Its your followings.',
       };
     } catch (error) {
-      Logger.log("error=> Can't get disliked posts count", error);
+      Logger.log("error=> Can't get followings function", error);
       throw error;
     }
   }
@@ -169,7 +219,7 @@ export class ProfileService {
       }
       const createdPostsCount = await this.postsRepository
         .createQueryBuilder()
-        .where(`user_id = ${id}`)
+        .where(`userId = ${id}`)
         .getCount();
 
       return {

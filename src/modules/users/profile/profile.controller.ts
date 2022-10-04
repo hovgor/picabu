@@ -19,14 +19,14 @@ export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @ApiBearerAuth()
-  @Get('/getFollowersCount')
+  @Get('/followersCount')
   async getFollowersCount(
-    @Body() body: getprofileDataDto,
     @Res() res: Response,
     @Req() req: any,
+    @Query() query: PagedSearchDto,
   ) {
     try {
-      const data = await this.profileService.getFollowersCount(req, body);
+      const data = await this.profileService.getFollowersCount(req, query);
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
       throw error;
@@ -34,14 +34,14 @@ export class ProfileController {
   }
 
   @ApiBearerAuth()
-  @Get('/getFollowingsCount')
+  @Get('/followingsCount')
   async getFollowingsCount(
-    @Body() body: getprofileDataDto,
+    @Query() query: PagedSearchDto,
     @Res() res: Response,
     @Req() req: any,
   ) {
     try {
-      const data = await this.profileService.getFollowingsCount(req, body);
+      const data = await this.profileService.getFollowingsCount(req, query);
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
       throw error;
@@ -67,7 +67,7 @@ export class ProfileController {
   }
 
   @ApiBearerAuth()
-  @Get('/getFollowers')
+  @Get('/followers')
   async getFollowers(
     @Query() query: PagedSearchDto,
     @Res() res: Response,
@@ -82,14 +82,14 @@ export class ProfileController {
   }
 
   @ApiBearerAuth()
-  @Get('/getFollowings')
+  @Get('/followings')
   async getFollowings(
-    @Body() body: any,
+    @Query() query: PagedSearchDto,
     @Res() res: Response,
     @Req() req: any,
   ) {
     try {
-      const data = await this.profileService.getFollowings(req, body);
+      const data = await this.profileService.getFollowings(req, query);
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
       throw error;
