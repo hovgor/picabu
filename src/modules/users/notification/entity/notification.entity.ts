@@ -1,3 +1,4 @@
+import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 import { NotificationType } from 'src/shared/types/notification.type';
 import {
@@ -7,14 +8,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CommentsEntityBase } from '../../entity/comments.entity';
 import { UsersEntityBase } from '../../entity/users.entity';
 
 @Entity({ schema: 'default', name: 'Post_notification' })
-export class PostNotificationEntityBase extends BaseEntity {
+export class NotificationEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -33,6 +34,26 @@ export class PostNotificationEntityBase extends BaseEntity {
   )
   @JoinColumn()
   userId: number;
+
+  @ManyToOne(
+    () => GroupsEntityBase,
+    (groupNotifEntity) => groupNotifEntity.notificationEntity,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  @JoinColumn()
+  groupId: number;
+
+  @ManyToOne(
+    () => CommentsEntityBase,
+    (groupNotifEntity) => groupNotifEntity.notificationEntity,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  @JoinColumn()
+  commentId: number;
 
   @Column({ name: 'notification_type' })
   notificationType: NotificationType;

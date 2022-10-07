@@ -12,8 +12,9 @@ export class NotificationController {
   @ApiBearerAuth()
   async getMyNotification(@Res() res: Response, @Req() req: any) {
     try {
-      const myNotification =
-        await this.notificationService.getMyPostNotification(req);
+      const myNotification = await this.notificationService.getMyNotification(
+        req,
+      );
       return res.status(HttpStatus.ACCEPTED).json(myNotification);
     } catch (error) {
       throw error;

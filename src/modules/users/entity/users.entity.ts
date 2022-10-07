@@ -21,7 +21,7 @@ import { BlockedEntityBase } from './blocked.entity';
 import { CommentsEntityBase } from './comments.entity';
 import { ReactionsEntityBase } from './reactions.entity';
 import { CommentsReactionsEntityBase } from './comments.reactions.entity';
-import { PostNotificationEntityBase } from '../notification/entity/post.notification.entity';
+import { NotificationEntityBase } from '../notification/entity/notification.entity';
 import { UserFollowEntitiyBase } from './user.following.entity';
 
 @Entity({ schema: 'default', name: 'Users' })
@@ -141,12 +141,12 @@ export class UsersEntityBase extends BaseEntity {
   @JoinTable()
   reactionsEntity: ReactionsEntityBase[];
 
-  @OneToMany(() => PostNotificationEntityBase, (reaction) => reaction.userId, {
+  @OneToMany(() => NotificationEntityBase, (reaction) => reaction.userId, {
     onDelete: 'CASCADE',
     nullable: true,
   })
   @JoinTable()
-  notificationEntity: PostNotificationEntityBase[];
+  notificationEntity: NotificationEntityBase[];
 
   @ManyToOne(() => UserFollowEntitiyBase, (user) => user.userEntity, {
     onDelete: 'CASCADE',

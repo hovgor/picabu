@@ -214,7 +214,7 @@ export class UsersService {
         { id: post.id },
         { rating: post.rating + body.reactionType },
       );
-      await this.notificationService.createPostNotification({
+      await this.notificationService.createNotification({
         postId: body.postId,
         userId: userAuth.id,
         notificationType: NotificationType.like,
@@ -386,6 +386,11 @@ export class UsersService {
             groupId: groupId,
           }),
         );
+      await this.notificationService.createNotification({
+        userId: user.id,
+        notificationType: NotificationType.subscribedGroup,
+        forUserId: group.user,
+      });
       return { data: subscribe, error: false, message: 'User is subscribed.' };
     } catch (error) {
       Logger.log('error=> subscribe group function', error);
@@ -469,6 +474,11 @@ export class UsersService {
           followToId: data.followToId,
         }),
       );
+      await this.notificationService.createNotification({
+        userId: user.id,
+        notificationType: NotificationType.follow,
+        forUserId: data.followToId,
+      });
       return {
         data: followUser,
         error: false,

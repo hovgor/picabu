@@ -22,7 +22,7 @@ import { ProfileService } from './profile/profile.service';
 import { ProfileController } from './profile/profile.controller';
 import { NotificationService } from './notification/notification.service';
 import { NotificationController } from './notification/notification.controller';
-import { PostNotificationEntityBase } from './notification/entity/post.notification.entity';
+import { NotificationEntityBase } from './notification/entity/notification.entity';
 
 @Module({
   imports: [
@@ -36,7 +36,7 @@ import { PostNotificationEntityBase } from './notification/entity/post.notificat
       UserFollowEntitiyBase,
       PostsEntityBase,
       BlockedEntityBase,
-      PostNotificationEntityBase,
+      NotificationEntityBase,
     ]),
     forwardRef(() => AuthModule),
     GroupsModule,

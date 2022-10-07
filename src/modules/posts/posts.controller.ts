@@ -176,6 +176,26 @@ export class PostsController {
   @ApiResponse({
     status: HttpStatus.OK,
     description:
+      'The body shows offset and limit, optional fields. In order to find a post there is a beginning field, get by tags.',
+  })
+  @Get('/getSamePosts/:id')
+  async getSamePosts(
+    @Res() res: Response,
+    @Query() query: PagedSearchDto,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      const search = await this.postsService.getSamePosts(query, id);
+      return res.status(HttpStatus.OK).json(search);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @UsePipes(new ValidationPipe())
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description:
       'The body shows offset and limit, optional fields. get by posts. If all inputs null endpoint get all.',
   })
   @Get('/getPosts')

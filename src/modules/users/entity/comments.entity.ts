@@ -13,6 +13,7 @@ import {
 } from 'typeorm';
 import { UsersEntityBase } from './users.entity';
 import { CommentsReactionsEntityBase } from './comments.reactions.entity';
+import { NotificationEntityBase } from '../notification/entity/notification.entity';
 
 @Entity({ schema: 'default', name: 'Posts_comments' })
 export class CommentsEntityBase extends BaseEntity {
@@ -43,6 +44,17 @@ export class CommentsEntityBase extends BaseEntity {
   )
   @JoinTable()
   commentsEntity: CommentsReactionsEntityBase[];
+
+  @OneToMany(
+    () => NotificationEntityBase,
+    (commentReaction) => commentReaction.commentId,
+    {
+      onDelete: 'CASCADE',
+      nullable: true,
+    },
+  )
+  @JoinTable()
+  notificationEntity: NotificationEntityBase[];
 
   @Column({ nullable: false })
   comment: string;

@@ -19,7 +19,7 @@ import { FavoritsEntityBase } from './favorite.post.entity';
 import { CommentsEntityBase } from 'src/modules/users/entity/comments.entity';
 import { ReactionsEntityBase } from 'src/modules/users/entity/reactions.entity';
 import { CommentsReactionsEntityBase } from 'src/modules/users/entity/comments.reactions.entity';
-import { PostNotificationEntityBase } from 'src/modules/users/notification/entity/post.notification.entity';
+import { NotificationEntityBase } from 'src/modules/users/notification/entity/notification.entity';
 
 @Entity({ schema: 'default', name: 'Posts' })
 export class PostsEntityBase extends BaseEntity {
@@ -107,7 +107,7 @@ export class PostsEntityBase extends BaseEntity {
   favoritesEntity: FavoritsEntityBase[];
 
   @OneToMany(
-    () => PostNotificationEntityBase,
+    () => NotificationEntityBase,
     (notification) => notification.postId,
     {
       onDelete: 'CASCADE',
@@ -115,7 +115,7 @@ export class PostsEntityBase extends BaseEntity {
     },
   )
   @JoinTable()
-  notificationEntity: PostNotificationEntityBase[];
+  notificationEntity: NotificationEntityBase[];
 
   @CreateDateColumn({
     name: 'created_date',

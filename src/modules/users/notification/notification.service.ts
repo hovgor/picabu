@@ -7,59 +7,73 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreatePostNotificationDto } from './dto/create.post.notification.dto';
-import { PostNotificationEntityBase } from './entity/post.notification.entity';
+import { CreateNotificationDto } from './dto/create.post.notification.dto';
+import { NotificationEntityBase } from './entity/notification.entity';
 import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class NotificationService {
   constructor(
-    @InjectRepository(PostNotificationEntityBase)
-    private postNotificationRepository: Repository<PostNotificationEntityBase>,
+    @InjectRepository(NotificationEntityBase)
+    private notificationRepository: Repository<NotificationEntityBase>,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
   ) {}
 
-  async createPostNotification(data: CreatePostNotificationDto) {
+  async createNotification(data: CreateNotificationDto) {
     try {
-      const postNotification = await this.postNotificationRepository.save(
-        this.postNotificationRepository.create({
+      const notification = await this.notificationRepository.save(
+        this.notificationRepository.create({
           userId: data.userId,
           forUserId: data.forUserId,
           postId: data.postId,
+          groupId: data.groupId,
+          commentId: data.commentId,
           notificationType: data.notificationType,
         }),
       );
-      return postNotification;
+      return notification;
     } catch (error) {
       Logger.log('create post notification function ', error);
       throw error;
     }
   }
 
-  async getMyPostNotification(req: any) {
+  async getMyNotification(req: any) {
     try {
       const userAuth = await this.authService.verifyToken(req);
 
       if (!userAuth) {
         throw new UnauthorizedException('User not authorized!!!');
       }
-      const myNotification = await this.postNotificationRepository
+      const myNotification = await this.notificationRepository
         .createQueryBuilder('notification')
         .leftJoinAndSelect('notification.userId', 'userEntity')
+        .leftJoinAndSelect('notification.postId', 'postEntity')
+        .leftJoinAndSelect('notification.commentId', 'commentEntity')
+        .leftJoinAndSelect('notification.groupId', 'groupEntity')
         .select('notification')
+        .addSelect([
+          'postEntity.id',
+          'postEntity.title',
+          'postEntity.rating',
+          'postEntity.createdAt',
+        ])
+        .addSelect(['commentEntity.id', 'commentEntity.comment'])
+        .addSelect(['groupEntity.id', 'groupEntity.title'])
         .addSelect([
           'userEntity.id',
           'userEntity.nicname',
-          'userEntity.email',
-          'userEntity.deviceId',
-          'userEntity.providerId',
           'userEntity.profilePhotoUrl',
         ])
-        .andWhere('notification.forUserId = :id', { id: userAuth.id })
-        .where({ sawTheNotification: false })
+        .orderBy('notification.createdAt', 'DESC')
+        .where('notification.forUserId = :id', { id: userAuth.id })
         .getMany();
-      return myNotification;
+      return {
+        data: myNotification,
+        error: false,
+        message: 'Its my notifications.',
+      };
     } catch (error) {
       Logger.log('get my post notification function');
       throw error;

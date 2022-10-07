@@ -94,7 +94,7 @@ export class ProfileService {
       }
       const likedPostsCount = await this.reactionsRepository
         .createQueryBuilder()
-        .where(`user_id = ${id} AND reaction_type = ${reaction}`)
+        .where(`userId = ${id} AND reactionType = ${reaction}`)
         .getCount();
 
       return {

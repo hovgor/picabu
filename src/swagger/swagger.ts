@@ -3,7 +3,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export function useSwagger(app: INestApplication) {
   const options = new DocumentBuilder()
-    .setTitle('Picabu2')
+    .setTitle('TaDaa:)')
     .setVersion('1.0.0')
     .addBearerAuth()
     .build();

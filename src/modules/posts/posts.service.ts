@@ -59,7 +59,9 @@ export class PostsService {
         description: data.description,
         userId: user.id,
       });
-
+      if (data.tags === null) {
+        throw new BadRequestException('Tags cannot be null!!!');
+      }
       if (data.tags.length <= 5 && data.tags.length >= 3) {
         await this.postsRepository.save(newPost);
         await this.tagsService.addTagsForPost({
@@ -67,7 +69,10 @@ export class PostsService {
           name: data.tags,
         });
       } else {
-        throw new BadRequestException('Tags length is not defined!!!');
+        throw new BadRequestException(
+          'Tags length is not defined!!!',
+          ' Must have at least 3 tags!!!',
+        );
       }
       if (data.attachment) {
         await this.uploadFileService.uploadFilePath({
@@ -75,7 +80,7 @@ export class PostsService {
           path: data.attachment,
         });
       }
-      return newPost;
+      return { data: newPost, error: false, message: 'Its your new post.' };
     } catch (error) {
       Logger.log('error=> create post function', error);
       throw error;
@@ -86,13 +91,17 @@ export class PostsService {
   async deletePost(id: number, request: any) {
     try {
       const user = await this.authService.verifyToken(request);
-      const post = await this.postsRepository.findOne({ where: { id } });
+      const post = await this.postsRepository
+        .createQueryBuilder('post')
+        .leftJoinAndSelect('post.userId', 'userEntity')
+        .where({ id })
+        .getOne();
       if (!post) {
         Logger.log('Post not exist!!!');
         throw new NotFoundException('Post not exist!');
       }
 
-      if (post.userId !== user.id) {
+      if (post.userId['id'] !== user.id) {
         Logger.log('User not authorization!!!');
         throw new UnauthorizedException('User not authorization');
       }
@@ -102,8 +111,8 @@ export class PostsService {
       await this.postsRepository.delete(id);
       return {
         data: null,
-        message: `delete post when Id = ${id}`,
         error: false,
+        message: `delete post when Id = ${id}`,
       };
     } catch (error) {
       Logger.log('error=> delete post function', error);
@@ -278,13 +287,16 @@ export class PostsService {
       const [result, count] = await this.tagsPostRepository
         .createQueryBuilder('tags')
         .leftJoinAndSelect('tags.post', 'postId')
+        .leftJoinAndSelect('tags.tag', 'tagEntity')
         .limit(query.limit)
         .offset(query.offset)
         .orderBy('tags.createdAt', 'DESC')
-        .where(`lower("tags"."name") LIKE lower('${query.beginning || ''}%')`)
+        .where(
+          `lower("tagEntity"."name") LIKE lower('${query.beginning || ''}%')`,
+        )
         .getManyAndCount();
       return {
-        data: { result: result, count },
+        data: { result, count },
         error: false,
         message: 'this is a posts',
       };
@@ -317,6 +329,39 @@ export class PostsService {
       };
     } catch (error) {
       Logger.log('error=> search post function ', error);
+      throw error;
+    }
+  }
+
+  async getSamePosts(query: PagedSearchDto, postId: number) {
+    try {
+      const post = await this.postsRepository
+        .createQueryBuilder('post')
+        .innerJoinAndSelect('post.tagsEntity', 'tags')
+        .leftJoinAndSelect('tags.tag', 'tagName')
+        // .select('post')
+        // .addSelect(['tags.tag.', 'tagName.name'])
+        .where({ id: postId })
+        .getOne();
+      if (!post) {
+        throw new NotFoundException('Post is not exist!!!');
+      }
+      const [result, count] = await this.tagsPostRepository
+        .createQueryBuilder('tags')
+        .leftJoinAndSelect('tags.post', 'postId')
+        .leftJoinAndSelect('tags.tag', 'tagEntity')
+        .limit(query.limit)
+        .offset(query.offset)
+        .orderBy('tags.createdAt', 'DESC')
+        .where(
+          `lower("tagEntity"."name") LIKE lower('${
+            post.tagsEntity[0].tag['name'] || post.tagsEntity[1].tag['name']
+          }%')`,
+        )
+        .getManyAndCount();
+      return { data: result, error: false, message: 'get same post.' };
+    } catch (error) {
+      Logger.log('get same posts function ', error);
       throw error;
     }
   }

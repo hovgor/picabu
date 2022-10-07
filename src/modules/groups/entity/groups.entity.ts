@@ -3,6 +3,7 @@ import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 import { TagsGroupEntityBase } from 'src/modules/tags/entity/tags.for.group.entity';
 import { SubscribeGroupEntityBase } from 'src/modules/users/entity/subscribe.group.entity';
 import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
+import { NotificationEntityBase } from 'src/modules/users/notification/entity/notification.entity';
 import {
   BaseEntity,
   Column,
@@ -39,6 +40,13 @@ export class GroupsEntityBase extends BaseEntity {
   })
   @JoinTable()
   groupEntity: SubscribeGroupEntityBase[];
+
+  @OneToMany(() => NotificationEntityBase, (group) => group.groupId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  notificationEntity: NotificationEntityBase[];
 
   @OneToMany(() => PostsToGroupEntityBase, (group) => group.groupId, {
     onDelete: 'CASCADE',

@@ -48,23 +48,23 @@ export class ProfileController {
     }
   }
 
-  @ApiBearerAuth()
-  @Get('/getLikedDislikedPostsCount')
-  async getLikedPostsCount(
-    @Body() body: getprofileDataDto,
-    @Res() res: Response,
-    @Req() req: any,
-  ) {
-    try {
-      const data = await this.profileService.getLikedDislikedPostsCount(
-        req,
-        body,
-      );
-      return res.status(HttpStatus.ACCEPTED).json(data);
-    } catch (error) {
-      throw error;
-    }
-  }
+  // @ApiBearerAuth()
+  // @Get('/getLikedDislikedPostsCount')
+  // async getLikedPostsCount(
+  //   @Body() body: getprofileDataDto,
+  //   @Res() res: Response,
+  //   @Req() req: any,
+  // ) {
+  //   try {
+  //     const data = await this.profileService.getLikedDislikedPostsCount(
+  //       req,
+  //       body,
+  //     );
+  //     return res.status(HttpStatus.ACCEPTED).json(data);
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
   @ApiBearerAuth()
   @Get('/followers')
