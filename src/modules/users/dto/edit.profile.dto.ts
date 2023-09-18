@@ -7,7 +7,7 @@ export class EditProfileDto {
   @MinLength(6)
   @MaxLength(20)
   @Matches(/^[a-zA-Z0-9]+$/, {
-    message: 'Nicname is not exist!!!',
+    message: 'nickname is not exist!!!',
   })
-  nicname: string;
+  nickname: string;
 }

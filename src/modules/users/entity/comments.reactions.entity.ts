@@ -1,4 +1,3 @@
-import { PostsEntityBase } from '../../posts/entity/posts.entity';
 import {
   BaseEntity,
   Column,
@@ -13,8 +12,8 @@ import {
 import { UsersEntityBase } from './users.entity';
 import { CommentsEntityBase } from './comments.entity';
 
-@Entity({ schema: 'default', name: 'User_comment_reactions' })
-@Unique(['userId', 'commentId'])
+@Entity({ schema: 'public', name: 'comment_reactions' })
+@Unique(['user', 'comment'])
 export class CommentsReactionsEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -22,26 +21,17 @@ export class CommentsReactionsEntityBase extends BaseEntity {
   @ManyToOne(() => UsersEntityBase, (user) => user.commentsReactionEntity, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn()
-  // @Column({ nullable: true, name: 'user_id' })
-  userId: number;
+  @JoinColumn({ name: 'user_id' })
+  user: number;
 
-  @ManyToOne(() => CommentsEntityBase, (user) => user.commentsEntity, {
+  @ManyToOne(() => CommentsEntityBase, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn()
-  // @Column({ nullable: true, name: 'comment_id' })
-  commentId: number;
+  @JoinColumn({ name: 'comment_id' })
+  comment: number;
 
-  @Column({ nullable: false })
-  reactionType: number;
-
-  @ManyToOne(() => PostsEntityBase, (post) => post.commentsReactionEntity, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  // @Column({ nullable: true, name: 'post_id' })
-  postId: number;
+  @Column({ nullable: false, name: 'reaction_id' })
+  reaction: number;
 
   @CreateDateColumn({
     name: 'created_date',
@@ -53,7 +43,7 @@ export class CommentsReactionsEntityBase extends BaseEntity {
   @UpdateDateColumn({
     name: 'updated_date',
     type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
+    default: null,
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   public updatedAt: Date;

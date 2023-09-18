@@ -12,7 +12,7 @@ export class UserSignUpDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  nicname: string;
+  nickname: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -37,10 +37,4 @@ export class UserSignUpDto {
     message: 'password too weak',
   })
   password: string;
-
-  @ApiProperty()
-  @IsString()
-  @MinLength(8)
-  @MaxLength(20)
-  passwordConfirm: string;
 }

@@ -6,22 +6,14 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  // UpdateDateColumn,
 } from 'typeorm';
-import { ReactionIconsEntityBase } from '../reaction-icons/entity/reaction.icons.entity';
-import { TagsPostEntityBase } from 'src/modules/tags/entity/tags.for.posts.entity';
 import { UploadFileEntityBase } from '../upload_file/entity/upload_file.entity';
-import { FavoritsEntityBase } from './favorite.post.entity';
-import { CommentsEntityBase } from 'src/modules/users/entity/comments.entity';
-import { ReactionsEntityBase } from 'src/modules/users/entity/reactions.entity';
-import { CommentsReactionsEntityBase } from 'src/modules/users/entity/comments.reactions.entity';
-import { NotificationEntityBase } from 'src/modules/users/notification/entity/notification.entity';
+import { TagsPostEntityBase } from 'src/modules/tags/entity/tags.for.posts.entity';
 
-@Entity({ schema: 'default', name: 'Posts' })
+@Entity({ schema: 'public', name: 'posts' })
 export class PostsEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -29,93 +21,36 @@ export class PostsEntityBase extends BaseEntity {
   @Column({ default: null, nullable: true })
   title: string;
 
-  @Column({ default: null, nullable: true })
-  description: string;
+  @Column('text', { array: true, default: null, nullable: true })
+  description: string[];
+
+  @OneToMany(() => UploadFileEntityBase, (uploadFile) => uploadFile.postId, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @Column({ default: null, name: 'file_url', nullable: true })
+  fileUrl: string;
+
+  @OneToMany(() => TagsPostEntityBase, (tags) => tags.post, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  // @Column({ default: null, name: 'tags_entity', nullable: true })
+  tagsEntity: string;
 
   @Column({ default: 0, nullable: true })
   rating: number;
 
-  @ManyToOne(() => UsersEntityBase, (user) => user.postEntity, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  // @Column({ name: 'user_id' })
-  userId: number;
+  @Column({ default: 0, name: 'comments_count', nullable: false })
+  commentsCount: number;
 
-  @ManyToOne(() => GroupsEntityBase, (group) => group.postsEntity, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  // @Column({ name: 'group_id', nullable: true })
-  groupId: number;
+  @ManyToOne(() => UsersEntityBase)
+  @JoinColumn({ name: 'user_id' })
+  user: number;
 
-  @OneToMany(() => UploadFileEntityBase, (upload_file) => upload_file.postId, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinTable()
-  uploadFileEntity: UploadFileEntityBase[];
-
-  @OneToMany(() => TagsPostEntityBase, (tag) => tag.post, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinTable()
-  tagsEntity: TagsPostEntityBase[];
-
-  @OneToMany(() => CommentsEntityBase, (comment) => comment.postId, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinTable()
-  commentsEntity: CommentsEntityBase[];
-
-  @OneToMany(() => ReactionsEntityBase, (comment) => comment.postId, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinTable()
-  reactionsEntity: ReactionsEntityBase[];
-
-  @OneToMany(
-    () => ReactionIconsEntityBase,
-    (reactionIcon) => reactionIcon.postId,
-    {
-      onDelete: 'CASCADE',
-      nullable: true,
-    },
-  )
-  @JoinTable()
-  reactionIconsEntity: ReactionIconsEntityBase[];
-
-  @OneToMany(
-    () => CommentsReactionsEntityBase,
-    (commentsReactionEntity) => commentsReactionEntity.postId,
-    {
-      onDelete: 'CASCADE',
-      nullable: true,
-    },
-  )
-  @JoinTable()
-  commentsReactionEntity: CommentsReactionsEntityBase[];
-
-  @OneToMany(() => FavoritsEntityBase, (tag) => tag.postId, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinTable()
-  favoritesEntity: FavoritsEntityBase[];
-
-  @OneToMany(
-    () => NotificationEntityBase,
-    (notification) => notification.postId,
-    {
-      onDelete: 'CASCADE',
-      nullable: true,
-    },
-  )
-  @JoinTable()
-  notificationEntity: NotificationEntityBase[];
+  @ManyToOne(() => GroupsEntityBase)
+  @JoinColumn({ name: 'community_id' })
+  community: number;
 
   @CreateDateColumn({
     name: 'created_date',
@@ -123,12 +58,4 @@ export class PostsEntityBase extends BaseEntity {
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   public createdAt: Date;
-
-  // @UpdateDateColumn({
-  //   name: 'updated_date',
-  //   type: 'timestamp',
-  //   default: () => 'CURRENT_TIMESTAMP(6)',
-  //   onUpdate: 'CURRENT_TIMESTAMP(6)',
-  // })
-  // public updatedAt: Date;
 }

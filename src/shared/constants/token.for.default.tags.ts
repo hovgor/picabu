@@ -1,0 +1,2 @@
+export const TOKEN_FOR_DEFAULT_TAGS =
+  '84a3bdbc23957ff6619d41e6b06237ea76907d25';

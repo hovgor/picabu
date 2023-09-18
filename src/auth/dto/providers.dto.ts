@@ -1,12 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class PasswordlessDto {
   @ApiProperty()
-  @IsNumber()
   @IsNotEmpty()
   @IsOptional()
-  providerId: number;
+  providerId: string;
 
   @ApiProperty()
   @IsString()
@@ -23,4 +22,6 @@ export class PasswordlessDto {
   @ApiProperty()
   @IsString()
   photo: string;
+
+  nickname?: string;
 }

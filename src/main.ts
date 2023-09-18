@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigEnum } from './config/config.enum';
@@ -6,6 +6,7 @@ import { ConfigService } from './config/config.service';
 import { useSwagger } from './swagger/swagger';
 import { setConfig } from './app.config';
 import * as dotenv from 'dotenv';
+import { convertQueryToNumberMiddleware } from './shared/middlewares/concat.query.middleware';
 dotenv.config();
 
 async function bootstrap() {
@@ -17,12 +18,13 @@ async function bootstrap() {
     },
   });
 
+  app.use(convertQueryToNumberMiddleware);
+  app.useGlobalPipes(new ValidationPipe());
   setConfig(app);
   useSwagger(app);
   app.enableCors();
   const PORT = app.get(ConfigService).get(ConfigEnum.PORT);
-  const HOST = app.get(ConfigService).get(ConfigEnum.HOST);
-  await app.listen(process.env.PORT || PORT, process.env.HOST || HOST);
-  console.log(`Server is listening on http://${HOST}:${PORT}`);
+  await app.listen(process.env.PORT || PORT);
+  console.log(`Server is listening on http://localhost:${PORT}`);
 }
 bootstrap();

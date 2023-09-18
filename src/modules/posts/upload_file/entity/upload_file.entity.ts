@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ schema: 'default', name: 'Upload_file' })
+@Entity({ schema: 'public', name: 'upload_file' })
 export class UploadFileEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -18,15 +18,10 @@ export class UploadFileEntityBase extends BaseEntity {
   @Column({ default: null, nullable: true })
   path: string;
 
-  @ManyToOne(
-    () => PostsEntityBase,
-    (postEntity) => postEntity.uploadFileEntity,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
+  @ManyToOne(() => PostsEntityBase, (postEntity) => postEntity.id, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
-  // @Column({ name: 'post_id' })
   postId: number;
 
   @CreateDateColumn({
@@ -39,7 +34,7 @@ export class UploadFileEntityBase extends BaseEntity {
   @UpdateDateColumn({
     name: 'updated_date',
     type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
+    default: null,
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   public updatedAt: Date;

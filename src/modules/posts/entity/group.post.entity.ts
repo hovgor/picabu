@@ -1,8 +1,6 @@
-// import { CategorieForFavoritsEntityBase } from 'src/modules/categories_for_favorite/entity/categorie.for.favorits.entity';
 import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
 import {
   BaseEntity,
-  //   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
@@ -11,16 +9,15 @@ import {
 } from 'typeorm';
 import { PostsEntityBase } from './posts.entity';
 
-@Entity({ schema: 'default', name: 'Posts_to_groups' })
+@Entity({ schema: 'public', name: 'posts_to_groups' })
 export class PostsToGroupEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => PostsEntityBase, (post) => post.favoritesEntity, {
+  @ManyToOne(() => PostsEntityBase, (post) => post.id, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn()
-  //   @Column({ nullable: true, name: 'post_id' })
+  @JoinColumn({ name: 'post_id' })
   postId: number;
 
   @ManyToOne(
@@ -30,8 +27,7 @@ export class PostsToGroupEntityBase extends BaseEntity {
       onDelete: 'CASCADE',
     },
   )
-  @JoinColumn()
-  //   @Column({ nullable: true, name: 'group_id' })
+  @JoinColumn({ name: 'group_id' })
   groupId: number;
 
   @CreateDateColumn({

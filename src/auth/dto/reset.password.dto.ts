@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 
 export class ChangePasswordDto {
@@ -13,8 +13,4 @@ export class ChangePasswordDto {
   @ApiProperty()
   @IsString()
   newPassword: string;
-
-  @ApiProperty()
-  @IsString()
-  confirmPassword: string;
 }

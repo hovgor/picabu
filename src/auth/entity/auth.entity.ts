@@ -4,19 +4,18 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ schema: 'default', name: 'Auth' })
+@Entity({ schema: 'public', name: 'auth' })
+@Index(['deviceId', 'user'], { unique: true })
 export class AuthEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
-
-  // @Column({ name: 'device_id' })
-  // deviceId: string;
 
   @Column({ default: null, nullable: true, name: 'access_token' })
   accessToken: string;
@@ -27,12 +26,11 @@ export class AuthEntityBase extends BaseEntity {
   @Column({ default: null, nullable: true, name: 'device_id' })
   deviceId: string;
 
-  @ManyToOne(() => UsersEntityBase, (user) => user.authEntity, {
+  @ManyToOne(() => UsersEntityBase, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn()
-  @Column({ name: 'user_id' })
-  userId: number;
+  @JoinColumn({ name: 'user_id' })
+  user: number;
 
   @CreateDateColumn({
     name: 'created_date',
@@ -44,7 +42,7 @@ export class AuthEntityBase extends BaseEntity {
   @UpdateDateColumn({
     name: 'updated_date',
     type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
+    default: null,
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   public updatedAt: Date;

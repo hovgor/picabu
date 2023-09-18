@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { parse } from 'dotenv';
 import { readFileSync } from 'fs';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Joi = require('joi');
 export type EnvConfig = Record<string, string | number>;
 
@@ -58,9 +57,9 @@ export class ConfigService {
 
       DATABASE_HOST: Joi.string().default('localhost'),
       DATABASE_PORT: Joi.number().default(5432),
-      DATABASE_USERNAME: Joi.string().default('picabuuser'),
+      DATABASE_USERNAME: Joi.string().default('tutuuser'),
       DATABASE_PASSWORD: Joi.string().allow('').default('password'),
-      DATABASE_NAME: Joi.string().default('picabu2'),
+      DATABASE_NAME: Joi.string().default('tutu2'),
       DATABASE_SCHEMA: Joi.string().default('default'),
 
       JWT_SIGN_ALGORITHM: Joi.string().valid('RS256', 'HS256').default('HS256'),

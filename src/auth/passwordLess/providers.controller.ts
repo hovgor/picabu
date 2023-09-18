@@ -10,7 +10,7 @@ import { PasswordlessNameDto } from 'src/auth/dto/providers.params.dto';
 export class ProvidersController {
   constructor(private readonly providersService: ProvidersService) {}
 
-  @Post('/provider/:providerName')
+  @Post('/:name')
   async signUp(
     @Body() body: PasswordlessDto,
     @Param() params: PasswordlessNameDto,
@@ -18,10 +18,7 @@ export class ProvidersController {
   ) {
     try {
       const newUser = await this.providersService.providerAuth(body, params);
-      return res.status(HttpStatus.CREATED).json({
-        success: true,
-        newUser,
-      });
+      return res.status(HttpStatus.CREATED).json(newUser);
     } catch (error) {
       throw error;
     }

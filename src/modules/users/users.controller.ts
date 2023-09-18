@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,60 +11,46 @@ import {
   Query,
   Req,
   Res,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
-import { ReactionsDto } from './dto/reactions.dto';
+import { Request, Response } from 'express';
 import { UsersService } from './users.service';
-import { ReplyCommentDto } from './dto/comment.dto';
+import { ReplyCommentDto } from './dto/reply.dto';
 import { CommentsReactionsDto } from './dto/comments.reactions.dto';
-import { FeedDto } from './dto/feed.dto';
-import { followUnfollowDto } from './dto/follow.unfollow.dto';
 import { BlockedUserDto } from './dto/blocked.user.dto';
-import { CommentDto } from './dto/comment.one.dto';
+import { CommentDto } from './dto/comment.dto';
 import { FeedStatus } from 'src/shared/types/feed.status';
-import { PagedSearchDto } from 'src/shared/search/paged.search.dto';
+import { PagedSearchDto } from 'src/shared/dto/paged.search.dto';
+import { QuestionsDto } from './settings/dto/questions.dto';
+import { FeedQuery } from './dto/feed.query.dto';
+import { DontReccomendDto } from './dto/dont.recommend.dto';
+import { AuthMiddleware } from 'src/shared/middlewares/auth.middleware';
+import { TargetType } from 'src/shared/types/rate_target';
+import { RateDto } from './dto/rate.dto';
+import { FollowTargetType } from './dto/followParam.dto';
+import { followUnfollowBodyDto } from './dto/followBody.dto';
+import { AcceptFollowRequestDto } from './dto/acceptFollowBody.dto';
+import { Paginate } from './dto/paginate.dto';
+import { ReportBodyDto } from './dto/reportBody.dto';
 
-@Controller('users')
 @ApiTags('Users')
+@Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
-  @ApiBearerAuth()
-  @ApiResponse({
-    status: HttpStatus.ACCEPTED,
-    description:
-      'To reaction in post, you need to add reaction type (reaction type most be -1, 0, 1). And add the token to the jogoheads.',
-  })
-  @Post('/reactUnreactPost')
-  async reactUnreactPost(
-    @Body() body: ReactionsDto,
-    @Res() res: Response,
-    @Req() req: any,
-  ) {
-    try {
-      const data = await this.usersService.reactPost(body, req);
-      return res.status(HttpStatus.ACCEPTED).json(data);
-    } catch (error) {
-      throw error;
-    }
-  }
 
   // comment posts
   @ApiResponse({
     status: HttpStatus.ACCEPTED,
     description:
-      'To comment in post, you need to add his id and comment in the body. And add the token to the jogoheads.',
+      'To comment in post, you need to add post id and comment in the body. To change comment add commentId.',
   })
   @ApiBearerAuth()
-  @Post('/commentPost')
-  async commentPost(
-    @Body() body: CommentDto,
-    @Res() res: Response,
-    @Req() req: any,
-  ) {
+  @Post('/upsertComment')
+  @UseInterceptors(AuthMiddleware)
+  async commentPost(@Body() body: CommentDto, @Res() res: Response) {
     try {
-      const data = await this.usersService.commentPost(body, req);
+      const data = await this.usersService.commentPost(body);
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
       throw error;
@@ -77,161 +64,216 @@ export class UsersController {
       'To replay comment in post, you need to add his id and comment and parrent comment id in the body. And add the token to the jogoheads.',
   })
   @ApiBearerAuth()
-  @Post('/replyCommentPost')
-  async replyCommentPost(
-    @Body() body: ReplyCommentDto,
-    @Res() res: Response,
-    @Req() req: any,
-  ) {
+  @Post('/upsertReply')
+  @UseInterceptors(AuthMiddleware)
+  async replyCommentPost(@Body() body: ReplyCommentDto, @Res() res: Response) {
     try {
-      const data = await this.usersService.replyCommentPost(body, req);
+      const data = await this.usersService.replyCommentPost(body);
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
       throw error;
     }
   }
 
-  @Get('getCommentOfTheDay')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Get comment of the day. ',
+  })
+  @ApiBearerAuth()
+  @UseInterceptors(AuthMiddleware)
+  @Get('commentOfTheDay')
   async getCommentOfTheDay(
     @Res() res: Response,
     @Query() query: PagedSearchDto,
+    @Req() req: Request,
   ) {
     try {
-      const data = await this.usersService.getCommentOfTheDay(query);
-      return res.status(HttpStatus.ACCEPTED).json(data);
+      const data = await this.usersService.getCommentOfTheDay(query, req.body);
+      return res.status(HttpStatus.OK).json(data);
     } catch (error) {
       throw error;
     }
   }
 
-  @ApiBearerAuth()
-  @ApiResponse({
-    status: HttpStatus.ACCEPTED,
-    description:
-      'To reaction in comment, you need to add reaction type (reaction type most be -1, 0, 1) and comment id. And add the token to the jogoheads.',
-  })
-  @Post('/reactUnreactComment')
-  async reactUnreactComment(
-    @Body() body: CommentsReactionsDto,
-    @Res() res: Response,
-    @Req() req: any,
-  ) {
-    try {
-      const data = await this.usersService.reactComment(body, req);
-      return res.status(HttpStatus.ACCEPTED).json(data);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // subscribe group
-  @ApiResponse({
-    status: HttpStatus.ACCEPTED,
-    description:
-      'To subscribe a group, you need to add his id(group id). And add the token to the jogoheads.',
-  })
-  @ApiBearerAuth()
-  @Post('/subscribe/:groupId')
-  async subscribeGroup(
-    @Param('groupId', ParseIntPipe) groupId: number,
-    @Req() req: any,
-    @Res() res: Response,
-  ) {
-    try {
-      const subscribe = await this.usersService.subscribeGroup(groupId, req);
-      return res.status(HttpStatus.ACCEPTED).json(subscribe);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // unsubscribe group
-  @ApiResponse({
-    status: HttpStatus.ACCEPTED,
-    description:
-      'To unsubscribe a group, you need to add his id(group id). And add the token to the jogoheads.',
-  })
-  @ApiBearerAuth()
-  @Post('/unsigned/:groupId')
-  async unsignedGroup(
-    @Param('groupId', ParseIntPipe) groupId: number,
-    @Req() req: any,
-    @Res() res: Response,
-  ) {
-    try {
-      const subscribe = await this.usersService.unsignedGroup(groupId, req);
-      return res.status(HttpStatus.ACCEPTED).json(subscribe);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @ApiResponse({
-    status: HttpStatus.ACCEPTED,
-    description:
-      'To subscribe a user, you need to add following user id(follow to id). And add the token to the jogoheads.',
-  })
-  @ApiBearerAuth()
-  @Post('/followUser')
-  async followUser(
-    @Req() req: any,
-    @Res() res: Response,
-    @Body() body: followUnfollowDto,
-  ) {
-    try {
-      const data = await this.usersService.followUser(body, req);
-      return res.status(HttpStatus.ACCEPTED).json(data);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @ApiBearerAuth()
   @ApiResponse({
     status: HttpStatus.NO_CONTENT,
-    description:
-      'To unsubscribe a user, you need to add following user id(follow to id). And add the token to the jogoheads.',
+    description: 'Delete comment by id',
   })
-  @Delete('/unfollowUser')
-  async followUnfollowUser(
+  @ApiBearerAuth()
+  @Delete('comment/:id')
+  async deleteCommentById(
     @Req() req: any,
+    @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
-    @Body() body: followUnfollowDto,
   ) {
     try {
-      const data = await this.usersService.unfollowUser(body, req);
-      return res.status(HttpStatus.NO_CONTENT).json(data);
+      await this.usersService.deleteCommentById(req, id);
+      return res.status(HttpStatus.NO_CONTENT).json();
     } catch (error) {
       throw error;
     }
   }
 
   @ApiBearerAuth()
-  @Post('/feed')
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description: 'To react comment Mention comment id and reaction id !',
+  })
+  @Post('/reactComment')
+  @UseInterceptors(AuthMiddleware)
+  async reactComment(@Body() body: CommentsReactionsDto, @Res() res: Response) {
+    try {
+      const data = await this.usersService.reactComment(body);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description:
+      'Add a “user” or “community” goal in the parameters. and then add "relatedId" & "status".',
+  })
+  @Post('/followUnfollow/:target')
+  @UseInterceptors(AuthMiddleware)
+  async followUnfollow(
+    @Param('target') target: FollowTargetType,
+    @Res() res: Response,
+    @Body() body: followUnfollowBodyDto,
+  ) {
+    if (target != 'user' && target != 'community')
+      throw new BadRequestException('Wrong Param Sent !');
+    try {
+      const data = await this.usersService.followUnfollow(body, target);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description:
+      'get follow requests.  You need to add "offset" and "limit". You need to add an aftarization token in the header.',
+  })
+  @ApiBearerAuth()
+  @Get('/followRequests')
+  @UseInterceptors(AuthMiddleware)
+  async getFollowRequests(
+    @Query() query: Paginate,
+    @Res() res: Response,
+    @Req() req: any,
+  ) {
+    try {
+      const data = await this.usersService.getFollowRequests(query, req.body);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description:
+      'You need to add an aftarization token in the header. You need to add "follower Id" & "community Id" to the body.  ',
+  })
+  @ApiBearerAuth()
+  @Post('/declineFollowRequest')
+  @UseInterceptors(AuthMiddleware)
+  async declineFollowRequest(
+    @Res() res: Response,
+    @Body() body: AcceptFollowRequestDto,
+  ) {
+    try {
+      const data = await this.usersService.declineFollowRequest(body);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description:
+      'You need to add an aftarization token in the header. You need to add "follower Id" & "community Id" to the body.  ',
+  })
+  @ApiBearerAuth()
+  @Post('/acceptFollowRequest')
+  @UseInterceptors(AuthMiddleware)
+  async acceptFollowRequest(
+    @Res() res: Response,
+    @Body() body: AcceptFollowRequestDto,
+  ) {
+    try {
+      const data = await this.usersService.acceptFollowRequest(body);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description:
+      'You need to add an aftarization token in the header.Get subscribe requests.  You need to add "offset" and "limit". ',
+  })
+  @ApiBearerAuth()
+  @Get('/subscribeRequests')
+  @UseInterceptors(AuthMiddleware)
+  async getSubscribeRequests(
+    @Query() query: Paginate,
+    @Res() res: Response,
+    @Req() req: any,
+  ) {
+    try {
+      const data = await this.usersService.getSubscribeRequests(
+        query,
+        req.body,
+      );
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description:
+      'You need to add an aftarization token in the header.To receive user feed, it is not necessary to be aftarized, but in this case you cannot use “myFeed” parameter only “new” and “top”.',
+  })
+  @ApiBearerAuth()
+  @Get('/feed')
   @ApiQuery({ name: 'status', enum: FeedStatus })
   async getFeedEndpoint(
     @Req() req: any,
     @Res() res: Response,
-    @Query('status') status: string,
-    @Body() body: FeedDto,
+    @Query() query: FeedQuery,
   ) {
     try {
-      const getFeed = await this.usersService.getFeed(status, body, req);
+      const getFeed = await this.usersService.getFeed(query, req);
       return res.status(HttpStatus.ACCEPTED).json(getFeed);
     } catch (error) {
       throw error;
     }
   }
 
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description:
+      'You need to add an aftarization token in the header. Add in the parameters the user ID about whom you want to view data.',
+  })
   @ApiBearerAuth()
-  @Get(':id')
+  @Get('profileData')
+  @UseInterceptors(AuthMiddleware)
   async getUserById(
-    @Param('id', ParseIntPipe) id: number,
+    @Query('ownerId', ParseIntPipe) ownerId: number,
     @Res() res: Response,
     @Req() req: any,
   ) {
     try {
-      const user = await this.usersService.getUserById(id, req);
+      const user = await this.usersService.getUserById(ownerId, req);
       res.status(HttpStatus.OK).json(user);
     } catch (error) {
       throw error;
@@ -242,17 +284,14 @@ export class UsersController {
   @ApiResponse({
     status: HttpStatus.ACCEPTED,
     description:
-      'To block a user, you need to add his id. And add the token to the jogoheads.',
+      'You need to add an aftarization token in the header. To block a user, you need to add his id. And add the token to the jogoheads.',
   })
   @ApiBearerAuth()
-  @Post('/blockedUser')
-  async blockedUser(
-    @Body() body: BlockedUserDto,
-    @Res() res: Response,
-    @Req() req: any,
-  ) {
+  @Post('/block')
+  @UseInterceptors(AuthMiddleware)
+  async blockedUser(@Body() body: BlockedUserDto, @Res() res: Response) {
     try {
-      const data = await this.usersService.toBlockedUser(body.userId, req);
+      const data = await this.usersService.toBlockedUser(body);
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
       throw error;
@@ -264,16 +303,55 @@ export class UsersController {
   @ApiResponse({
     status: HttpStatus.ACCEPTED,
     description:
-      'To unblock a user, you need to add his id. And add the token to the jogoheads.',
+      'You need to add an aftarization token in the header. To unblock a user, you need to add his id. And add the token to the jogoheads.',
   })
-  @Post('/unblockedUser')
+  @Post('/unblocked')
   async unBlockedUser(
     @Body() body: BlockedUserDto,
     @Res() res: Response,
     @Req() req: any,
   ) {
     try {
-      const data = await this.usersService.toUnBlockedUser(body.userId, req);
+      const data = await this.usersService.toUnBlockedUser(
+        body.blockUserId,
+        req,
+      );
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description:
+      'You need to add an aftarization token in the header. Add or add posts that you don’t want to be recommended to watch',
+  })
+  @Post('/dontRecommend')
+  async dontRecommend(
+    @Body() body: DontReccomendDto,
+    @Res() res: Response,
+    @Req() req: any,
+  ) {
+    try {
+      const data = await this.usersService.dontRecommend(body, req);
+      return res.status(HttpStatus.ACCEPTED).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description: 'Report !',
+  })
+  @Post('/report')
+  @UseInterceptors(AuthMiddleware)
+  async report(@Body() body: ReportBodyDto, @Res() res: Response) {
+    try {
+      const data = await this.usersService.report(body);
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
       throw error;
@@ -283,13 +361,90 @@ export class UsersController {
   // get all blocked users
   @ApiBearerAuth()
   @ApiResponse({
-    status: HttpStatus.ACCEPTED,
+    status: HttpStatus.OK,
     description: 'Add a token and it will show all blockers (black list).',
   })
-  @Get('/getBlockedUsers')
-  async getBlockedUsers(@Res() res: Response, @Req() req: any) {
+  @UseInterceptors(AuthMiddleware)
+  @Get('/allBlocked')
+  async getBlockedUsers(
+    @Res() res: Response,
+    @Req() req: any,
+    @Query() query: Paginate,
+  ) {
     try {
-      const data = await this.usersService.getBlockedList(req);
+      const data = await this.usersService.getBlockedList(query, req);
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // get all blocked users
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description:
+      'Add a token and it will show all blockers count (black list count).',
+  })
+  @UseInterceptors(AuthMiddleware)
+  @Get('/allBlockedCount')
+  async getBlockedUsersCount(@Res() res: Response, @Req() req: any) {
+    try {
+      const data = await this.usersService.getBlockedListCount(req);
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Get Help',
+  })
+  @ApiBearerAuth()
+  @Get('/help')
+  async help(@Res() res: Response, @Req() req: any) {
+    try {
+      const helpFaqs = await this.usersService.getHelp(req);
+      res.status(HttpStatus.OK).json(helpFaqs);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Get Help',
+  })
+  @ApiBearerAuth()
+  @Post('/sendQuestion')
+  async sendQuestion(
+    @Res() res: Response,
+    @Body() body: QuestionsDto,
+    @Req() req: any,
+  ) {
+    try {
+      const sendQuestion = await this.usersService.sendQuestion(body, req);
+      res.status(HttpStatus.OK).json(sendQuestion);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description: 'To react comment Mention comment id and reaction id !',
+  })
+  @Post('/rate/:target')
+  @UseInterceptors(AuthMiddleware)
+  async rate(
+    @Param('target') target: TargetType,
+    @Body() body: RateDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const data = await this.usersService.rate(body, target);
       return res.status(HttpStatus.ACCEPTED).json(data);
     } catch (error) {
       throw error;

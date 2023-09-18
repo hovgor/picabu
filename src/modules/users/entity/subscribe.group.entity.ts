@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { UsersEntityBase } from './users.entity';
 
-@Entity({ schema: 'default', name: 'Subscribe_group' })
+@Entity({ schema: 'public', name: 'subscribe_community' })
 export class SubscribeGroupEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -19,16 +19,14 @@ export class SubscribeGroupEntityBase extends BaseEntity {
   @ManyToOne(() => UsersEntityBase, (user) => user.userEntity, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn()
-  // @Column({ nullable: true, name: 'user_id' })
-  userId: number;
+  @JoinColumn({ name: 'user_id' })
+  user: number;
 
   @ManyToOne(() => GroupsEntityBase, (group) => group.groupEntity, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn()
-  // @Column({ nullable: true, name: 'group_id' })
-  groupId: number;
+  @JoinColumn({ name: 'community_id' })
+  community: number;
 
   @CreateDateColumn({
     name: 'created_date',
@@ -36,12 +34,4 @@ export class SubscribeGroupEntityBase extends BaseEntity {
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   public createdAt: Date;
-
-  // @UpdateDateColumn({
-  //   name: 'updated_date',
-  //   type: 'timestamp',
-  //   default: () => 'CURRENT_TIMESTAMP(6)',
-  //   onUpdate: 'CURRENT_TIMESTAMP(6)',
-  // })
-  // public updatedAt: Date;
 }

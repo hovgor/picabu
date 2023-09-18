@@ -1,11 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class AddToFAvoritesDto {
-  @ApiProperty()
   @IsNumber()
-  @IsNotEmpty()
-  categoriesId: number;
+  @IsOptional()
+  userId: number;
 
   @ApiProperty()
   @IsNumber()

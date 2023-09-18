@@ -1,12 +1,9 @@
-// Packages
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-
-// Providers
 import { JWTConfigService } from '../config/jwt.config.service';
 import { AuthService } from './auth.service';
-import { jwtConstants } from './constants/jwt.constants';
+import { jwtConstants } from './strategies/jwt.constants';
 
 @Module({
   imports: [

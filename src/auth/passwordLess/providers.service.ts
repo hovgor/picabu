@@ -3,9 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PasswordlessDto } from 'src/auth/dto/providers.dto';
 import { PasswordlessNameDto } from 'src/auth/dto/providers.params.dto';
 import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
-// import { generateNickname } from '../../shared/utils/utils';
 import { Repository } from 'typeorm';
-// import { AuthEntityBase } from '../../auth/entity/auth.entity';
+import { Utils } from 'src/shared/utils/utils';
 import { AuthService } from '../auth.service';
 
 @Injectable()
@@ -21,29 +20,52 @@ export class ProvidersService {
     const provider = params.providerName;
     const { deviceId, providerId } = data;
     try {
-      const user = await this.usersRepository.findOne({
+      let registrationStatus = 'in';
+      let user = await this.usersRepository.findOne({
         where: { provider, providerId },
       });
-      let userId = user.id;
-      // const nickname = generateNickname.generateNickname();
+
       if (!user) {
-        const createProviderUser = await this.usersRepository.save(
+        let nickname = Utils.generateNickname(data.email);
+        let userExists = await this.usersRepository.findOne({
+          where: { nickname },
+        });
+
+        while (userExists) {
+          nickname = Utils.generateNickname(data.email);
+          userExists = await this.usersRepository.findOne({
+            where: { nickname },
+          });
+        }
+
+        data.nickname = nickname;
+        user = await this.usersRepository.save(
           this.usersRepository.create(data),
         );
-        userId = createProviderUser.id;
+
+        registrationStatus = 'up';
       }
+
       const accToken = await this.authService.createAccessToken(user);
       const refToken = await this.authService.createRefreshToken(user);
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const insertedTokenToDb = await this.authService.insertTokenInDb({
-        userId,
+        user: user.id,
         accessToken: accToken,
         refreshToken: refToken,
         deviceId,
       });
+
       return {
-        data: insertedTokenToDb,
+        data: {
+          userId: user.id,
+          nickname: user.nickname,
+          accessToken: accToken,
+          refreshToken: refToken,
+        },
         error: false,
-        message: 'Signed Up Successfully',
+        message: `Signed ${registrationStatus} Successfully`,
       };
     } catch (error) {
       throw error;

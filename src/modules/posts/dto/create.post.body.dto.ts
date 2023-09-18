@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreatePostBodyDto {
   @ApiProperty()
@@ -7,13 +14,25 @@ export class CreatePostBodyDto {
   @IsNotEmpty()
   title: string;
 
+  @IsNumber()
+  @IsNotEmpty()
+  userId: number;
+
+  @ApiProperty({ default: false })
+  @IsBoolean()
+  @IsNotEmpty()
+  donation?: boolean = false;
+
+  @ApiPropertyOptional({ type: [String], description: 'Array of strings' })
+  @IsArray()
+  @IsString({ each: true })
+  description: string[];
+
+  @ApiProperty({ default: [] })
+  tags: string[] = [];
+
   @ApiPropertyOptional()
-  @IsString()
-  description?: string;
-
-  @ApiProperty({ default: null })
-  tags?: any[] = null;
-
-  @ApiPropertyOptional({ default: null })
-  attachment?: any[] = null;
+  @IsNumber()
+  @IsOptional()
+  community_id?: number;
 }

@@ -5,56 +5,16 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UsersEntityBase } from './users.entity';
-import { CommentsReactionsEntityBase } from './comments.reactions.entity';
-import { NotificationEntityBase } from '../notification/entity/notification.entity';
 
-@Entity({ schema: 'default', name: 'Posts_comments' })
+@Entity({ schema: 'public', name: 'posts_comments' })
 export class CommentsEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @ManyToOne(() => UsersEntityBase, (comment) => comment.commentsEntity, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  // @Column({ name: 'user_id' })
-  userId: number;
-
-  @ManyToOne(() => PostsEntityBase, (comment) => comment.commentsEntity, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  // @Column({ name: 'post_id' })
-  postId: number;
-
-  @OneToMany(
-    () => CommentsReactionsEntityBase,
-    (commentReaction) => commentReaction.userId,
-    {
-      onDelete: 'CASCADE',
-      nullable: true,
-    },
-  )
-  @JoinTable()
-  commentsEntity: CommentsReactionsEntityBase[];
-
-  @OneToMany(
-    () => NotificationEntityBase,
-    (commentReaction) => commentReaction.commentId,
-    {
-      onDelete: 'CASCADE',
-      nullable: true,
-    },
-  )
-  @JoinTable()
-  notificationEntity: NotificationEntityBase[];
 
   @Column({ nullable: false })
   comment: string;
@@ -62,8 +22,23 @@ export class CommentsEntityBase extends BaseEntity {
   @Column({ default: 0, nullable: true })
   rating: number;
 
-  @Column({ nullable: true, default: 0 })
-  parentCommentId: number;
+  @ManyToOne(() => CommentsEntityBase, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'parent_comment_id' })
+  parentCommentId: number | null;
+
+  @ManyToOne(() => UsersEntityBase, (user) => user.id, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'user_id' })
+  user: number;
+
+  @ManyToOne(() => PostsEntityBase, (post) => post.id, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'post_id' })
+  post: number;
 
   @CreateDateColumn({
     name: 'created_date',
@@ -75,7 +50,7 @@ export class CommentsEntityBase extends BaseEntity {
   @UpdateDateColumn({
     name: 'updated_date',
     type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
+    default: null,
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   public updatedAt: Date;

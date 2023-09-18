@@ -20,23 +20,23 @@ export class UserValidator {
       const validRegex =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*#?&]{8,}$/;
       if (password.match(validRegex)) {
-        return password;
+        return true;
       } else {
         Logger.log(`'Invalid password(${password})!!!' `);
-        throw new BadRequestException('Invalid password!!!');
+        return false;
       }
     } catch (error) {
       throw error;
     }
   }
-  public userNicname(nicname: string) {
+  public userNickname(nickname: string) {
     try {
       const validRegex = /^[A-Za-z0-9]+([A-Za-z0-9]*|[._]?[A-Za-z0-9]+)*$/;
-      if (nicname.match(validRegex)) {
-        return nicname;
+      if (nickname.match(validRegex)) {
+        return nickname;
       } else {
-        Logger.log(`'Invalid nicname(${nicname})!!!' `);
-        throw new BadRequestException('Invalid nicname!!!');
+        Logger.log(`'Invalid nickname(${nickname})!!!' `);
+        throw new BadRequestException('Invalid nickname!!!');
       }
     } catch (error) {
       throw error;

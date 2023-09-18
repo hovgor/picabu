@@ -8,23 +8,12 @@ export const client = createClient({
     port: +process.env.REDIS_PORT,
     host: process.env.REDIS_HOST,
   },
+  password: process.env.REDIS_PASSWORD,
 });
 
 client.on('connect', () => {
-  switch (process.env.NODE_ENV) {
-    case 'local':
-      client.select(0);
-      break;
-    case 'development':
-      client.select(1);
-      break;
-    case 'staging':
-      client.select(2);
-      break;
-    case 'production':
-      client.select(3);
-      break;
-  }
+  client.select(8);
+
   Logger.log('Connected to Redis');
 });
 

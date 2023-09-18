@@ -12,8 +12,7 @@ import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import { Repository } from 'typeorm';
 import { AuthService } from '../auth.service';
 import * as securePin from 'secure-pin';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const mailer = require('../../shared/email/mail.sender');
+import { pinMailSender } from '../../shared/email/mail.sender';
 import { v4 as uuidv4 } from 'uuid';
 import { ChangePasswordDto } from '../dto/reset.password.dto';
 import { ForgotPasswordDto } from '../dto/forgot.password.dto';
@@ -46,23 +45,13 @@ export class PasswordService {
       if (!validUser) {
         throw new NotFoundException('User not found!!!');
       }
-      const message = {
-        to: verifyEmail,
-        subject: 'Verify accaunt',
-        test: `Your pin code => ${pin}`,
-        html: `<h1>Your pin code => ${pin}</h1>`,
-      };
+
       client.set(verifyEmail, pin);
       client.expire(verifyEmail, 60 * 60);
-      const sendEmail = mailer(message);
+      const sendEmail = await pinMailSender(verifyEmail, pin);
       if (sendEmail) {
         return {
           message: `email sent to mail ${email}`,
-        };
-      } else {
-        return {
-          message: `email don't sent to mail ${email}`,
-          success: false,
         };
       }
     } catch (error) {
@@ -77,7 +66,7 @@ export class PasswordService {
       const verifyEmail = this.userValidator.userEmail(data.email);
       if (!verifyEmail) {
         Logger.log('error => email is not defined!!');
-        throw new BadRequestException('email is not defined!!!');
+        throw new BadRequestException('No user registered with such Email !');
       }
 
       const validUser = await this.usersRepository.findOne({
@@ -86,22 +75,32 @@ export class PasswordService {
       if (!validUser) {
         throw new NotFoundException('User not found!!!');
       }
+
+      const theOldPassword = await this.passwordHashing.IsMutchPassword(
+        data.newPassword,
+        validUser.password,
+      );
+      if (theOldPassword)
+        throw new BadRequestException(
+          'You are not allowed to use previous password !',
+        );
+
       const verifyTicketId = await client.get(data.email.toLowerCase());
       if (verifyTicketId !== data.ticket) {
         Logger.log('Ticket is not verify');
         throw new BadRequestException('tikets is not mutch');
       }
 
-      if (data.newPassword !== data.confirmPassword) {
-        Logger.log('passwords do not mutch');
-        throw new BadRequestException(
-          'New password and confirm password is not mutch. \n Please try again!!!',
-        );
-      }
       const validPassword = this.userValidator.userPassword(data.newPassword);
+      if (!validPassword) {
+        throw new BadRequestException('Invalid password');
+      }
       const hashPassword: string = await this.passwordHashing.PasswordHash(
-        validPassword,
+        data.newPassword,
       );
+      if (hashPassword === validUser.password) {
+        throw new BadRequestException('User Cant Use Old Password');
+      }
       const user: UsersEntityBase = await this.usersRepository.findOne({
         where: { email: data.email.toLowerCase() },
       });
@@ -121,7 +120,7 @@ export class PasswordService {
   // forgot password
   async forgotPassword(data: ForgotPasswordDto) {
     try {
-      if (!data) {
+      if (!data.email) {
         Logger.log('Data is not defined!!');
         throw new NotFoundException('Phon or email is not found!!!');
       }
@@ -136,11 +135,12 @@ export class PasswordService {
       if (!validUser) {
         throw new NotFoundException('User not found!!!');
       }
+
       const pinVerify = await this.emailVerifyWhitMail(verifyEmail);
       return {
-        data: { pinVerify },
+        data: null,
         error: false,
-        message: null,
+        message: pinVerify.message,
       };
     } catch (error) {
       Logger.log('error=> forgot password function ', error);
@@ -175,12 +175,9 @@ export class PasswordService {
       await client.set(verifyEmail, ticket);
       client.expire(verifyEmail, 60 * 60);
       return {
-        data: {
-          ticket,
-        },
+        data: ticket,
         error: false,
         message: `Pin code is true(${data.pinCode}).`,
-        success: true,
       };
     } catch (error) {
       Logger.log('error=> pin code verify function ', error);

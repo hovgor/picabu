@@ -1,6 +1,5 @@
 import {
   BaseEntity,
-  Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
@@ -10,19 +9,17 @@ import {
 } from 'typeorm';
 import { UsersEntityBase } from './users.entity';
 
-@Entity({ schema: 'default', name: 'Blocked' })
+@Entity({ schema: 'public', name: 'blocked' })
 export class BlockedEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false })
-  blockingUserId: number;
+  @ManyToOne(() => UsersEntityBase)
+  @JoinColumn({ name: 'user_id' })
+  user: number;
 
-  @ManyToOne(() => UsersEntityBase, (user) => user.blockedEntity, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  // @Column({ nullable: true, name: 'blocked_user_id' })
+  @ManyToOne(() => UsersEntityBase)
+  @JoinColumn({ name: 'blocked_user_id' })
   blockedUser: number;
 
   @CreateDateColumn({
@@ -35,7 +32,7 @@ export class BlockedEntityBase extends BaseEntity {
   @UpdateDateColumn({
     name: 'updated_date',
     type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
+    default: null,
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   public updatedAt: Date;

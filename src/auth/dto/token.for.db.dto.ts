@@ -3,7 +3,7 @@ import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 export class TokenForDbDto {
   @IsNotEmpty()
   @IsInt()
-  userId: number;
+  user: number;
 
   @IsNotEmpty()
   @IsString()

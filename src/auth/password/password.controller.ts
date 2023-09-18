@@ -12,7 +12,7 @@ import { PasswordService } from './password.service';
 export class PasswordController {
   constructor(private readonly passwordService: PasswordService) {}
 
-  @Patch('changePassword')
+  @Patch('change')
   @ApiResponse({
     status: HttpStatus.ACCEPTED,
     description:
@@ -27,7 +27,7 @@ export class PasswordController {
     }
   }
 
-  @Post('forgotPassword')
+  @Post('forgot')
   @ApiResponse({
     status: HttpStatus.ACCEPTED,
     description:
@@ -38,9 +38,7 @@ export class PasswordController {
       const forgot = await this.passwordService.forgotPassword({
         email: body.email,
       });
-      return res.status(HttpStatus.ACCEPTED).json({
-        forgot,
-      });
+      return res.status(HttpStatus.ACCEPTED).json(forgot);
     } catch (error) {
       throw error;
     }

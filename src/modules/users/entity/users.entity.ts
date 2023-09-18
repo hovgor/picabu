@@ -1,5 +1,4 @@
 import { AuthEntityBase } from 'src/auth/entity/auth.entity';
-import { CategorieForFavoritsEntityBase } from 'src/modules/categories_for_favorite/entity/categorie.for.favorits.entity';
 import { GroupsEntityBase } from 'src/modules/groups/entity/groups.entity';
 import { PostsEntityBase } from 'src/modules/posts/entity/posts.entity';
 import { ReactionIconsEntityBase } from 'src/modules/posts/reaction-icons/entity/reaction.icons.entity';
@@ -9,6 +8,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   JoinTable,
   ManyToOne,
@@ -19,38 +19,45 @@ import {
 import { SubscribeGroupEntityBase } from './subscribe.group.entity';
 import { BlockedEntityBase } from './blocked.entity';
 import { CommentsEntityBase } from './comments.entity';
-import { ReactionsEntityBase } from './reactions.entity';
+import { PostReactionEntityBase } from 'src/modules/posts/entity/post.reactions.entity';
 import { CommentsReactionsEntityBase } from './comments.reactions.entity';
-import { NotificationEntityBase } from '../notification/entity/notification.entity';
 import { UserFollowEntitiyBase } from './user.following.entity';
+import { AdminsForComunityEntityBase } from 'src/modules/groups/entity/admins.entity';
 
-@Entity({ schema: 'default', name: 'Users' })
+@Entity({ schema: 'public', name: 'users' })
 export class UsersEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: null, nullable: true })
+  @Column({ default: null, nullable: true, unique: true })
   email: string;
 
   @Column({ default: null, nullable: true })
   phone: string;
 
+  @Column({ default: 0, nullable: true })
+  rating: number;
+
   @Column({ default: null, nullable: true })
   password: string;
 
-  @Column({ default: null, nullable: true })
-  nicname: string;
+  @Index('nickname')
+  @Column({ default: null, nullable: true, unique: true })
+  nickname: string;
 
-  @Column({ default: null, nullable: true })
+  @Column({ default: null, nullable: true, name: 'profile_photo_url' })
   profilePhotoUrl: string;
+
+  @Column({ default: null, nullable: true, name: 'background_photo_url' })
+  backgroundPhotoUrl: string;
 
   @Column({ default: 'local', nullable: false })
   provider: string;
 
-  @Column({ default: null, nullable: true })
-  providerId: number;
+  @Column({ default: null, nullable: true, name: 'provider_id' })
+  providerId: string;
 
-  @Column({ default: null, nullable: true })
+  @Column({ default: null, nullable: true, name: 'user_type' })
   userType: string;
 
   @Column({ name: 'device_id', default: null, nullable: true })
@@ -59,6 +66,9 @@ export class UsersEntityBase extends BaseEntity {
   @Column({ default: null, nullable: true })
   role: UserRoles;
 
+  @Column({ default: false, nullable: false })
+  privacy: boolean;
+
   @OneToMany(() => BlockedEntityBase, (blocked) => blocked.blockedUser, {
     onDelete: 'CASCADE',
     nullable: true,
@@ -66,37 +76,26 @@ export class UsersEntityBase extends BaseEntity {
   @JoinTable()
   blockedEntity: BlockedEntityBase[];
 
-  @OneToMany(() => AuthEntityBase, (auth) => auth.userId, {
+  @OneToMany(() => AuthEntityBase, (auth) => auth.user, {
     onDelete: 'CASCADE',
     nullable: true,
   })
   @JoinTable()
   authEntity: AuthEntityBase[];
 
-  @OneToMany(() => PostsEntityBase, (post) => post.userId, {
+  @OneToMany(() => PostsEntityBase, (post) => post.user, {
     onDelete: 'CASCADE',
     nullable: true,
   })
   @JoinTable()
   postEntity: PostsEntityBase[];
 
-  @OneToMany(() => SubscribeGroupEntityBase, (user) => user.userId, {
+  @OneToMany(() => SubscribeGroupEntityBase, (user) => user.user, {
     onDelete: 'CASCADE',
     nullable: true,
   })
   @JoinTable()
   userEntity: SubscribeGroupEntityBase[];
-
-  @OneToMany(
-    () => CategorieForFavoritsEntityBase,
-    (categorie) => categorie.user,
-    {
-      onDelete: 'CASCADE',
-      nullable: true,
-    },
-  )
-  @JoinTable()
-  categorieForFavoritesEntity: CategorieForFavoritsEntityBase[];
 
   @OneToMany(
     () => ReactionIconsEntityBase,
@@ -116,7 +115,14 @@ export class UsersEntityBase extends BaseEntity {
   @JoinTable()
   groupeEntity: GroupsEntityBase[];
 
-  @OneToMany(() => CommentsEntityBase, (comment) => comment.userId, {
+  @OneToMany(() => AdminsForComunityEntityBase, (admins) => admins.user, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinTable()
+  adminsEntity: AdminsForComunityEntityBase[];
+
+  @OneToMany(() => CommentsEntityBase, (comment) => comment.user, {
     onDelete: 'CASCADE',
     nullable: true,
   })
@@ -125,7 +131,7 @@ export class UsersEntityBase extends BaseEntity {
 
   @OneToMany(
     () => CommentsReactionsEntityBase,
-    (commentReaction) => commentReaction.userId,
+    (commentReaction) => commentReaction.user,
     {
       onDelete: 'CASCADE',
       nullable: true,
@@ -134,24 +140,15 @@ export class UsersEntityBase extends BaseEntity {
   @JoinTable()
   commentsReactionEntity: CommentsReactionsEntityBase[];
 
-  @OneToMany(() => ReactionsEntityBase, (reaction) => reaction.userId, {
+  @OneToMany(() => PostReactionEntityBase, (reaction) => reaction.user, {
     onDelete: 'CASCADE',
     nullable: true,
   })
   @JoinTable()
-  reactionsEntity: ReactionsEntityBase[];
+  reactionsEntity: PostReactionEntityBase[];
 
-  @OneToMany(() => NotificationEntityBase, (reaction) => reaction.userId, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinTable()
-  notificationEntity: NotificationEntityBase[];
-
-  @ManyToOne(() => UserFollowEntitiyBase, (user) => user.userEntity, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
+  @ManyToOne(() => UserFollowEntitiyBase)
+  @JoinColumn({ name: 'follow_id' })
   followId: number;
 
   @CreateDateColumn({
@@ -164,7 +161,7 @@ export class UsersEntityBase extends BaseEntity {
   @UpdateDateColumn({
     name: 'updated_date',
     type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
+    default: null,
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   public updatedAt: Date;

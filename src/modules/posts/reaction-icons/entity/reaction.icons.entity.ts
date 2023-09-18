@@ -12,12 +12,12 @@ import {
 } from 'typeorm';
 import { PostsEntityBase } from '../../entity/posts.entity';
 
-@Entity({ schema: 'default', name: 'Reaction_icons' })
+@Entity({ schema: 'public', name: 'reaction_icons' })
 export class ReactionIconsEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => PostsEntityBase, (post) => post.reactionIconsEntity, {
+  @ManyToOne(() => PostsEntityBase, (post) => post.id, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
@@ -31,7 +31,7 @@ export class ReactionIconsEntityBase extends BaseEntity {
   @Column({ nullable: true, name: 'user_id' })
   userId: number;
 
-  @Column({ nullable: true, default: PostReactions.default })
+  @Column({ nullable: true, default: PostReactions.Default })
   reactionType: PostReactions;
 
   @CreateDateColumn({
@@ -44,7 +44,7 @@ export class ReactionIconsEntityBase extends BaseEntity {
   @UpdateDateColumn({
     name: 'updated_date',
     type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
+    default: null,
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   public updatedAt: Date;

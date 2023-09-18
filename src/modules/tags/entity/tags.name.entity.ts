@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity({ schema: 'default', name: 'Tags_Name' })
+@Entity({ schema: 'public', name: 'tags_name' })
 export class TagsNameEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

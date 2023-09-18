@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   Logger,
   NotFoundException,
@@ -17,15 +18,12 @@ import { UserSignUpDto } from 'src/modules/users/dto/user.signup.dto';
 import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 import * as securePin from 'secure-pin';
 import { Repository } from 'typeorm';
-import { jwtConstants } from './constants/jwt.constants';
-import { IJwtPayload } from './constants/jwt.payload.interface';
+import { IJwtPayload } from './strategies/jwt.payload.interface';
 import { TokenForDbDto } from './dto/token.for.db.dto';
 import { AuthEntityBase } from './entity/auth.entity';
-import { CategoriesForFavoriteService } from 'src/modules/categories_for_favorite/categories_for_favorite.service';
 import { LogoutDto } from './dto/logout.dto';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const mailer = require('../shared/email/mail.sender');
-// const mailer = require('../shared/email/mail.sender');
+import { EmailVerifyDto } from 'src/modules/users/dto/email.verify.dto';
+import { pinMailSender } from '../shared/email/mail.sender';
 
 @Injectable()
 export class AuthService {
@@ -37,8 +35,41 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly userValidator: UserValidator,
     private readonly passwordHashing: HashPassword,
-    private readonly categoriesForFavoriteService: CategoriesForFavoriteService,
   ) {}
+
+  async verifyUser(data: EmailVerifyDto) {
+    try {
+      const existEmail = await this.usersRepository.findOne({
+        where: { email: data.email },
+      });
+      if (existEmail) {
+        throw new ConflictException(
+          `User with this email(${data.email}) already exists!!!`,
+        );
+      }
+      const existNickname = await this.usersRepository.findOne({
+        where: { nickname: data.nickname },
+      });
+      if (existNickname) {
+        throw new ConflictException(
+          `User with this nickname(${data.nickname}) already exists!!!`,
+        );
+      }
+      const isValidPass: boolean = this.userValidator.userPassword(
+        data.password,
+      );
+      if (!isValidPass) {
+        throw new BadRequestException(
+          'Invalid password!!!',
+          'Password must be at least 8 letters, of which at least one large letter and at least one digit.',
+        );
+      }
+      const sender = await this.emailVerifyWhitMail(data.email);
+      return { data: sender, error: false, message: 'Pin code sent to email.' };
+    } catch (error) {
+      throw error;
+    }
+  }
 
   // decode token
   async decodeToken(token: string) {
@@ -70,11 +101,8 @@ export class AuthService {
         role: user.role,
         deviceId: user.deviceId,
       };
-
-      return this.jwtService.signAsync(payload, {
-        secret: jwtConstants.secret,
-        expiresIn: jwtConstants.expiresInAccessToken,
-      });
+      const token = await this.jwtService.signAsync(payload);
+      return token;
     } catch (error) {
       throw new UnprocessableEntityException(
         'error: create jwt token=> access ',
@@ -93,11 +121,8 @@ export class AuthService {
         role: user.role,
         deviceId: user.deviceId,
       };
-
-      return this.jwtService.signAsync(payload, {
-        secret: jwtConstants.secret,
-        expiresIn: jwtConstants.expiresInRefreshToken,
-      });
+      const token = await this.jwtService.signAsync(payload);
+      return token;
     } catch (error) {
       throw new UnprocessableEntityException(
         'error: create jwt token => refresh ',
@@ -142,7 +167,13 @@ export class AuthService {
       if (!data) {
         throw new NotFoundException('tokens data is not defined!!!');
       }
-      return await this.authRepository.save(this.authRepository.create(data));
+      const queryBuilder = this.authRepository
+        .createQueryBuilder()
+        .insert()
+        .into(AuthEntityBase)
+        .values(data)
+        .orUpdate(['access_token', 'refresh_token'], ['device_id', 'user_id']);
+      return queryBuilder.execute();
     } catch (error) {
       Logger.log('error: tokens not defined!!!');
       throw error;
@@ -164,27 +195,35 @@ export class AuthService {
       if (!data) {
         throw new BadRequestException('data for user is not defined !!!');
       }
-      const nicname = this.userValidator.userNicname(data.nicname);
-      if (!nicname) {
-        Logger.log('error=> nicname is not defined!!!');
-        throw new BadRequestException('Nicname not exist!!!');
+      const nickname = this.userValidator.userNickname(data.nickname);
+      if (!nickname) {
+        Logger.log('error=> nickname is not defined!!!');
+        throw new BadRequestException('Nickname not Allowed !');
       }
+
       const verifyEmail = this.userValidator.userEmail(data.email);
       if (!verifyEmail) {
         Logger.log('error => email is not defined!!');
-        throw new BadRequestException('email is not defined!!!');
+        throw new BadRequestException('Email Nickname not Allowed!');
       }
-      const isExist = await this.usersRepository.findOne({
+      const emailExists = await this.usersRepository.findOne({
         where: { email: verifyEmail },
       });
-      if (isExist) {
-        Logger.log(`user whit this email(${verifyEmail}) olredy exist`);
-        throw new BadRequestException('email already exists!!');
+
+      const nicknameExists = await this.usersRepository.findOne({
+        where: { nickname },
+      });
+
+      if (emailExists) {
+        Logger.log(`User with email (${verifyEmail}) alredy exists`);
+        throw new BadRequestException('Email already exists !');
       }
-      if (data.password !== data.passwordConfirm) {
-        Logger.log('Passwords do not match');
-        throw new BadRequestException('Passwords do not match');
+
+      if (nicknameExists) {
+        Logger.log(`User with nickname (${nickname}) alredy exists`);
+        throw new BadRequestException('Nickname already exists !');
       }
+
       const redisPinCode = await client.get(verifyEmail);
 
       if (data.pinCode !== redisPinCode) {
@@ -193,12 +232,15 @@ export class AuthService {
       }
 
       const verifyPassword = this.userValidator.userPassword(data.password);
+      if (!verifyPassword) {
+        throw new BadRequestException('Invalid password');
+      }
       const passwordHash = await this.passwordHashing.PasswordHash(
-        verifyPassword,
+        data.password,
       );
       const user: UsersEntityBase = await this.usersRepository.save(
         this.usersRepository.create({
-          nicname: data.nicname,
+          nickname: data.nickname,
           email: verifyEmail,
           password: passwordHash,
           role: UserRoles.User,
@@ -212,16 +254,14 @@ export class AuthService {
         throw new UnprocessableEntityException('tokens are undefined');
       }
       await this.insertTokenInDb({
-        userId: user.id,
+        user: user.id,
         accessToken: accessToken,
         refreshToken: refreshToken,
         deviceId: data.deviceId,
       });
-      await this.categoriesForFavoriteService.createCategorieForFavoritWhitSignUp(
-        user.id,
-      );
+
       return {
-        data: { accessToken, refreshToken, verifyEmail },
+        data: { accessToken, refreshToken, id: user.id },
         error: false,
         message: `Tokens for user ${verifyEmail}.`,
       };
@@ -242,31 +282,12 @@ export class AuthService {
         Logger.log('error => email is not defined!!');
         throw new BadRequestException('email is not defined!!!');
       }
-      const message = {
-        to: verifyEmail,
-        subject: 'Verify accaunt',
-        test: `Your pin code => ${pin}`,
-        html: `<h1>Your pin code => ${pin}</h1>`,
-      };
+
       client.set(verifyEmail, pin);
-      client.expire(verifyEmail, 60 * 60);
+      client.expire(verifyEmail, 60 * 10);
 
-      const sendEmail = mailer(message);
-
-      if (sendEmail) {
-        return {
-          data: null,
-          error: false,
-          message: `email sent to mail ${email}`,
-        };
-      } else {
-        return {
-          // data: null,
-          // error: true,
-          message: `email don't sent to mail ${email}`,
-          success: false,
-        };
-      }
+      const sendEmail = await pinMailSender(verifyEmail, pin);
+      return sendEmail;
     } catch (error) {
       Logger.log('error=> email not exist!!!');
       throw error;
@@ -303,6 +324,7 @@ export class AuthService {
           ' Password is wrong!!! \n Please write again!!!',
         );
       }
+
       const accessToken = await this.createAccessToken(user);
       const refreshToken = await this.createRefreshToken(user);
       if (!accessToken || !refreshToken) {
@@ -310,16 +332,16 @@ export class AuthService {
         throw new UnprocessableEntityException('tokens are undefined');
       }
       await this.insertTokenInDb({
-        userId: user.id,
+        user: user.id,
         accessToken: accessToken,
         refreshToken: refreshToken,
         deviceId: data.deviceId,
       });
       return {
         data: {
+          id: user.id,
           accessToken,
           refreshToken,
-          verifyEmail,
         },
         error: false,
         message: null,
@@ -345,7 +367,28 @@ export class AuthService {
 
       const user = await this.usersRepository.findOne({ where: { id } });
 
+      if (!user?.id) {
+        Logger.log('Wrong authorization token provided !!!');
+        throw new UnauthorizedException(
+          'Wrong authorization token provided !!!',
+        );
+      }
+
       return user;
+    } catch (error) {
+      Logger.log('error=> token verify function ', error);
+      throw error;
+    }
+  }
+
+  async verifyMultiToken(request: any) {
+    try {
+      const token = (request.headers['authorization'] + '').split(' ')[1];
+      const decToken = await this.decodeToken(token);
+      if (!decToken) return null;
+      const id: number = await this.afterDecode(token);
+      const user = await this.usersRepository.findOne({ where: { id } });
+      return user.id || null;
     } catch (error) {
       Logger.log('error=> token verify function ', error);
       throw error;
@@ -361,20 +404,27 @@ export class AuthService {
       }
 
       const isValidToken = await this.authRepository.findOne({
-        where: { deviceId: data.deviceId },
+        where: { user: user.id, deviceId: data.deviceId },
       });
-      if (!isValidToken) {
-        throw new BadRequestException('Device Id is not defined!!!');
-      }
-      await this.authRepository
-        .createQueryBuilder()
-        .delete()
-        .from(AuthEntityBase)
-        .where('deviceId = :deviceId', { deviceId: data.deviceId })
-        .andWhere('userId = :userId', { userId: user.id })
-        .execute();
 
-      return { data: null, error: false, message: 'User is logout.' };
+      if (!isValidToken) {
+        throw new BadRequestException('No Such Device registered !');
+      }
+      const token = (request.headers['authorization'] + '').split(' ')[1];
+
+      if (isValidToken.accessToken !== token) {
+        throw new UnauthorizedException({
+          data: null,
+          error: true,
+          message: 'vaffanculo!!! ',
+        });
+      }
+      await this.authRepository.delete({
+        deviceId: data.deviceId,
+        user: user.id,
+      });
+
+      return { data: null, error: false, message: 'Logged Out Successfully.' };
     } catch (error) {
       Logger.log('error=> logout user function ', error);
       throw error;
@@ -388,11 +438,11 @@ export class AuthService {
       if (!user) {
         throw new UnauthorizedException('User is not authorized!!!');
       }
-      await this.authRepository
-        .createQueryBuilder()
-        .delete()
-        .where('userId = :userId', { userId: user.id })
-        .execute();
+      await this.authRepository;
+      await this.authRepository.delete({
+        user: user.id,
+      });
+
       return {
         data: null,
         error: false,
@@ -400,6 +450,46 @@ export class AuthService {
       };
     } catch (error) {
       Logger.log('error=> logout user function ', error);
+      throw error;
+    }
+  }
+
+  async revokeTokens(headers: any) {
+    try {
+      let reqRefreshToken = headers['refresh_token'];
+      if (reqRefreshToken.includes('Bearer')) {
+        reqRefreshToken = (reqRefreshToken + '').split(' ')[1];
+      }
+
+      if (!reqRefreshToken)
+        throw new BadRequestException('Wrong Type of refresh_token !');
+
+      const decodeToken: any = await this.decodeToken(reqRefreshToken);
+      const now = Math.floor(Date.now() / 1000);
+      if (decodeToken.exp < now)
+        throw new BadRequestException('Expired refresh_token !');
+
+      const userId = await this.afterDecode(reqRefreshToken);
+      const user = await this.usersRepository.findOne({
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new NotFoundException('User not found!');
+      }
+      const accessToken = await this.createAccessToken(user);
+      const refreshToken = await this.createRefreshToken(user);
+
+      await this.authRepository.update(
+        { user: userId },
+        { accessToken: accessToken, refreshToken: refreshToken },
+      );
+
+      return {
+        data: { accessToken, refreshToken },
+        error: false,
+        message: 'You have refreshed your tokens successfully !',
+      };
+    } catch (error) {
       throw error;
     }
   }

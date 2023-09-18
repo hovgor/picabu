@@ -1,13 +1,15 @@
 export enum PostReactions {
-  default = 1,
+  All = -1,
 
-  Smile = 2,
+  Default = 0,
 
-  Kind = 3,
+  Smile = 1,
 
-  Wow = 4,
+  Kind = 2,
 
-  Cry = 5,
+  Wow = 3,
 
-  Angry = 6,
+  Cry = 4,
+
+  Angry = 5,
 }

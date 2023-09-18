@@ -5,6 +5,9 @@ export class BlockedUserDto {
   @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
+  blockUserId: number;
+
+  @IsNumber()
   @IsOptional()
   userId: number;
 }

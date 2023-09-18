@@ -1,12 +1,11 @@
 import {
   Body,
   Controller,
-  Delete,
   HttpStatus,
   Post,
   Req,
   Res,
-  UnprocessableEntityException,
+  Headers,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -14,17 +13,14 @@ import { EmailVerifyDto } from 'src/modules/users/dto/email.verify.dto';
 
 import { UserSignInDto } from 'src/modules/users/dto/user.signin.dto';
 import { UserSignUpDto } from 'src/modules/users/dto/user.signup.dto';
-import { UsersService } from 'src/modules/users/users.service';
 import { AuthService } from './auth.service';
 import { LogoutDto } from './dto/logout.dto';
+import { RequestHeadersDto } from './dto/refreshTokenHeaders.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('signUp/confirm')
   @ApiResponse({
@@ -41,7 +37,7 @@ export class AuthController {
     }
   }
 
-  @Post('signUp/verify')
+  @Post('signUp')
   @ApiResponse({
     status: HttpStatus.OK,
     description:
@@ -49,22 +45,8 @@ export class AuthController {
   })
   async signUpVerify(@Body() body: EmailVerifyDto, @Res() res: Response) {
     try {
-      const existEmail = await this.usersService.getUserWhitEmail(body.email);
-      if (existEmail) {
-        throw new UnprocessableEntityException(
-          `User whit this email olredy exist!!!`,
-        );
-      }
-      const sender = await this.authService.emailVerifyWhitMail(body.email);
-      if (sender.success) {
-        res.status(HttpStatus.OK).json({
-          status: sender,
-        });
-      } else {
-        res.status(HttpStatus.NOT_FOUND).json({
-          status: sender,
-        });
-      }
+      const verifyUser = await this.authService.verifyUser(body);
+      return res.status(HttpStatus.OK).json(verifyUser);
     } catch (error) {
       throw error;
     }
@@ -85,31 +67,51 @@ export class AuthController {
   }
 
   @ApiBearerAuth()
-  @Delete('logout')
+  @Post('logout')
   @ApiResponse({
-    status: HttpStatus.RESET_CONTENT,
+    status: HttpStatus.NO_CONTENT,
     description: 'For logout user you need insert token and divace id.',
   })
   async logout(@Body() body: LogoutDto, @Req() req: any, @Res() res: Response) {
     try {
       await this.authService.logout(body, req);
-      return res.status(HttpStatus.RESET_CONTENT).json();
+      return res.status(HttpStatus.NO_CONTENT).json();
     } catch (error) {
       throw error;
     }
   }
 
   @ApiBearerAuth()
-  @Delete('logoutAllDevices')
+  @Post('logoutAllDevices')
   @ApiResponse({
-    status: HttpStatus.RESET_CONTENT,
+    status: HttpStatus.NO_CONTENT,
     description:
       'For logout user you need insert token and divace id. This endpoint is deleted all tokens in database.',
   })
   async logoutAllDevices(@Req() req: any, @Res() res: Response) {
     try {
       await this.authService.logoutAllDevices(req);
-      return res.status(HttpStatus.RESET_CONTENT).json();
+      return res.status(HttpStatus.NO_CONTENT).json();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description:
+      'when expire token you can add refresh token in header and take new access and refresh tokens',
+  })
+  @ApiBearerAuth()
+  @Post('revokeTokens')
+  async revokeTokens(
+    @Res() res: Response,
+    @Req() req: any,
+    @Headers() headers: RequestHeadersDto,
+  ) {
+    try {
+      const newTokens = await this.authService.revokeTokens(headers);
+      return res.status(HttpStatus.OK).json(newTokens);
     } catch (error) {
       throw error;
     }

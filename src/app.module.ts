@@ -5,9 +5,12 @@ import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './modules/posts/posts.module';
-import { CategoriesForFavoriteModule } from './modules/categories_for_favorite/categories_for_favorite.module';
 import { GroupsModule } from './modules/groups/groups.module';
 import { GatewaysModule } from './shared/gateways/gateways.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { GlobalsModule } from './modules/globals/globals.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -16,10 +19,13 @@ import { GatewaysModule } from './shared/gateways/gateways.module';
     UsersModule,
     AuthModule,
     PostsModule,
-    CategoriesForFavoriteModule,
     GroupsModule,
     GatewaysModule,
+    PaymentsModule,
+    GlobalsModule,
+    NotificationsModule,
+    SearchModule,
   ],
   providers: [DatabaseConfigService],
 })
-export class AppModule {}
+export class AppModule { }

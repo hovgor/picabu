@@ -1,38 +1,32 @@
-import { CategorieForFavoritsEntityBase } from 'src/modules/categories_for_favorite/entity/categorie.for.favorits.entity';
 import {
   BaseEntity,
-  // Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  // UpdateDateColumn,
 } from 'typeorm';
 import { PostsEntityBase } from './posts.entity';
+import { UsersEntityBase } from 'src/modules/users/entity/users.entity';
 
-@Entity({ schema: 'default', name: 'Favorite_posts' })
+@Entity({ schema: 'public', name: 'favorite_posts' })
+@Index(['post', 'user'], { unique: true })
 export class FavoritsEntityBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => PostsEntityBase, (post) => post.favoritesEntity, {
+  @ManyToOne(() => PostsEntityBase, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn()
-  // @Column({ nullable: true, name: 'post_id' })
-  postId: number;
+  @JoinColumn({ name: 'post_id' })
+  post: number;
 
-  @ManyToOne(
-    () => CategorieForFavoritsEntityBase,
-    (categories) => categories.categoriesEntity,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
-  @JoinColumn()
-  // @Column({ nullable: true, name: 'categories_id' })
-  categoriesId: number;
+  @ManyToOne(() => UsersEntityBase, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'user_id' })
+  user: number;
 
   @CreateDateColumn({
     name: 'created_date',

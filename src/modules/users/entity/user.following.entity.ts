@@ -4,36 +4,25 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  OneToMany,
-  JoinTable,
   JoinColumn,
   ManyToOne,
+  Unique,
 } from 'typeorm';
 import { UsersEntityBase } from './users.entity';
 
-@Entity({ schema: 'default', name: 'user_following' })
+@Entity({ schema: 'public', name: 'user_following' })
+@Unique(['user', 'followTo'])
 export class UserFollowEntitiyBase extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => UsersEntityBase, (user) => user.followId, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  userId: number;
+  @ManyToOne(() => UsersEntityBase)
+  @JoinColumn({ name: 'user_id' })
+  user: number;
 
-  @OneToMany(() => UsersEntityBase, (user) => user.followId, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
-  @JoinTable()
-  userEntity: UsersEntityBase[];
-
-  @ManyToOne(() => UsersEntityBase, (user) => user.followId, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  followToId: number;
+  @ManyToOne(() => UsersEntityBase)
+  @JoinColumn({ name: 'follow_to_id' })
+  followTo: number;
 
   @CreateDateColumn({
     name: 'created_date',
@@ -45,7 +34,7 @@ export class UserFollowEntitiyBase extends BaseEntity {
   @UpdateDateColumn({
     name: 'updated_date',
     type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
+    default: null,
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   public updatedAt: Date;

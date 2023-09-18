@@ -3,7 +3,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export function useSwagger(app: INestApplication) {
   const options = new DocumentBuilder()
-    .setTitle('TaDaa:)')
+    .setTitle('TUTU')
     .setVersion('1.0.0')
     .addBearerAuth()
     .build();

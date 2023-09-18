@@ -2,7 +2,7 @@ export class ReturnFollowersDto {
   id: number;
   email: string;
   phone: string;
-  nicname: string;
+  nickname: string;
   profilePhotoUrl: string;
   provider: string;
   providerId: string;
